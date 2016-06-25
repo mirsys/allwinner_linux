@@ -727,6 +727,13 @@ config REGULATOR_STW481X_VMMC
 	  This driver supports the internal VMMC regulator in the STw481x
 	  PMIC chips.
 
+config REGULATOR_SY8106A
+	tristate "Silergy SY8106A"
+	depends on I2C && (OF || COMPILE_TEST)
+	select REGMAP_I2C
+	help
+	  This driver provides support for SY8106A voltage regulator.
+
 config REGULATOR_TPS51632
 	tristate "TI TPS51632 Power Regulator"
 	depends on I2C
@@ -886,4 +893,3 @@ config REGULATOR_WM8994
 	  WM8994 CODEC.
 
 endif
-
