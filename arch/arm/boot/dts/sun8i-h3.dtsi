@@ -53,24 +53,28 @@
 			reg = <0>;
 			clocks = <&ccu CLK_CPUX>;
 			clock-latency = <244144>; /* 8 32k periods */
+			clock-frequency = <1200000000>;
 		};
 
 		cpu@1 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
 			reg = <1>;
+			clock-frequency = <1200000000>;
 		};
 
 		cpu@2 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
 			reg = <2>;
+			clock-frequency = <1200000000>;
 		};
 
 		cpu@3 {
 			compatible = "arm,cortex-a7";
 			device_type = "cpu";
 			reg = <3>;
+			clock-frequency = <1200000000>;
 		};
 	};
 
