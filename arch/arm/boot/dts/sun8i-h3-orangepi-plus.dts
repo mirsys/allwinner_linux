@@ -153,6 +153,10 @@
 	};
 };
 
+&ehci0 {
+	status = "okay";
+};
+
 &ehci3 {
 	status = "okay";
 };
@@ -174,6 +178,10 @@
 	bias-pull-up;
 };
 
+&ohci0 {
+	status = "okay";
+};
+
 &pio {
 	usb3_vbus_pin_a: usb3_vbus_pin@0 {
 		pins = "PG11";
@@ -184,10 +192,37 @@
 		pins = "PD6";
 		function = "gpio_out";
 	};
+
+	usb0_id_detect_pin: usb0_id_detect_pin@0 {
+		pins = "PG12";
+		function = "gpio_in";
+	};
+};
+
+&r_pio {
+	usb0_vbus_pin_opiplus: usb0_vbus_pin@0 {
+		pins = "PL2";
+		function = "gpio_out";
+	};
+};
+
+&reg_usb0_vbus {
+	pinctrl-0 = <&usb0_vbus_pin_opiplus>;
+	gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
+	status = "okay";
+};
+
+&usb_otg {
+	dr_mode = "peripheral";
+	status = "okay";
 };
 
 &usbphy {
 	usb3_vbus-supply = <&reg_usb3_vbus>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_id_detect_pin>;
+	usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
+	usb0_vbus-supply = <&reg_usb0_vbus>;
 };
 
 &mdio {
