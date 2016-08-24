@@ -42,6 +42,7 @@
 
 /* The Orange Pi Plus is an extended version of the Orange Pi 2 */
 #include "sun8i-h3-orangepi-2.dts"
+#include <dt-bindings/thermal/thermal.h>
 
 / {
 	model = "Xunlong Orange Pi Plus / Plus 2";
@@ -69,6 +70,72 @@
 		startup-delay-us = <100000>;
 		enable-active-high;
 		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&cpu0 {
+	operating-points = <
+		/* kHz	  uV */
+		1368000	1500000
+		1344000	1500000
+		1296000	1340000
+		1248000	1340000
+		1224000	1340000
+		1200000	1340000
+		1152000	1320000
+		1104000	1320000
+		1056000	1320000
+		1008000	1200000
+		960000	1200000
+		816000	1100000
+		648000	1100000
+		480000	1040000
+		240000	1040000
+		120000	1040000
+		>;
+	#cooling-cells = <2>;
+	cooling-min-level = <0>;
+	cooling-max-level = <15>;
+	cpu0-supply = <&vdd_cpu>;
+};
+
+&cpu_thermal {
+	trips {
+		cpu_warm: cpu_warm {
+			temperature = <65000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_hot: cpu_hot {
+			temperature = <75000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_very_hot: cpu_very_hot {
+			temperature = <90000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_crit: cpu_crit {
+			temperature = <105000>;
+			hysteresis = <2000>;
+			type = "critical";
+		};
+	};
+
+	cooling-maps {
+		cpu_warm_limit_cpu {
+			trip = <&cpu_warm>;
+			cooling-device = <&cpu0 THERMAL_NO_LIMIT 10>;
+		};
+		cpu_hot_limit_cpu {
+			trip = <&cpu_hot>;
+			cooling-device = <&cpu0 12 12>;
+		};
+		cpu_very_hot_limit_cpu {
+			trip = <&cpu_very_hot>;
+			cooling-device = <&cpu0 14 THERMAL_NO_LIMIT>;
+		};
 	};
 };
 
