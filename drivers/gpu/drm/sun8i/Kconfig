@@ -17,3 +17,10 @@ config DRM_SUN8I_DE2
 	  Choose this option if your Allwinner chipset has the DE2 interface
 	  as the A64, A83T and H3. If M is selected the module will be called
 	  sun8i-de2-drm.
+
+config DRM_SUN8I_DE2_HDMI
+	tristate "Support for DE2 HDMI"
+	depends on DRM_SUN8I_DE2
+	help
+	  Choose this option if you use want HDMI on DE2.
+	  If M is selected the module will be called sun8i-de2-hdmi.
