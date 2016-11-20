@@ -56,6 +56,7 @@
 	aliases {
 		serial0 = &uart0;
 		ethernet0 = &emac;
+		lcd0 = &lcd0;
 	};
 
 	chosen {
@@ -168,6 +169,10 @@
 	};
 };
 
+&de {
+	status = "okay";
+};
+
 &ehci0 {
 	status = "okay";
 };
@@ -180,6 +185,14 @@
 	phy-handle = <&int_mii_phy>;
 	phy-mode = "mii";
 	allwinner,leds-active-low;
+	status = "okay";
+};
+
+&hdmi {
+	status = "okay";
+};
+
+&lcd0 {
 	status = "okay";
 };
 
