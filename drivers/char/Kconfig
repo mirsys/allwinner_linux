@@ -592,6 +592,10 @@ config TILE_SROM
 	  device appear much like a simple EEPROM, and knows
 	  how to partition a single ROM for multiple purposes.
 
+config SUNXI_SOC_INFO
+	tristate "sunxi SOC info driver"
+	default y
+
 source "drivers/char/xillybus/Kconfig"
 
 endmenu
