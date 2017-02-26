@@ -357,8 +357,8 @@
 
 			assigned-clocks = <&ccu CLK_PLL_DE>,
 					  <&ccu CLK_DE>;
-			assigned-clock-rates =  <864000000>,
-						<432000000>;
+			assigned-clock-rates =  <600000000>,
+						<300000000>;
 		};
 
 		pio: pinctrl@01c20800 {
