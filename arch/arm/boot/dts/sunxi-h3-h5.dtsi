@@ -665,6 +665,11 @@
 				pins = "PL11";
 				function = "s_cir_rx";
 			};
+
+			r_i2c_pins_a: r_i2c@0 {
+				pins = "PL0", "PL1";
+				function = "s_twi";
+			};
 		};
 	};
 
