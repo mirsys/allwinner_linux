@@ -13,6 +13,7 @@
 #include <linux/clk.h>
 #include <linux/reset.h>
 #include <drm/drmP.h>
+#include <drm/drm_encoder.h>
 
 /* SoC types */
 #define SOC_A83T 0

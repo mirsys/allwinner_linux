@@ -504,7 +504,7 @@ static void de2_plane_update(struct priv *priv, struct lcd *lcd,
 
 	ui_sel = alpha_glob = 0;
 
-	switch (fb->pixel_format) {
+	switch (fb->format->format) {
 	case DRM_FORMAT_ARGB8888:
 		fmt = DE2_FORMAT_ARGB_8888;
 		ui_sel = VI_CFG_ATTR_ui_sel;
@@ -544,7 +544,7 @@ static void de2_plane_update(struct priv *priv, struct lcd *lcd,
 		break;
 	default:
 		pr_err("de2_plane_update: format %.4s not yet treated\n",
-			(char *) &fb->pixel_format);
+			(char *) &fb->format->format);
 		return;
 	}
 

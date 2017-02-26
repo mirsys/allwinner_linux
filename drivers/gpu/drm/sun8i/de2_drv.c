@@ -199,7 +199,6 @@ static int de2_drm_bind(struct device *dev)
 
 	priv->fbdev = drm_fbdev_cma_init(drm,
 					 32,	/* bpp */
-					 drm->mode_config.num_crtc,
 					 drm->mode_config.num_connector);
 	if (IS_ERR(priv->fbdev)) {
 		ret = PTR_ERR(priv->fbdev);
