@@ -649,6 +649,20 @@
 			status = "disabled";
 		};
 
+		r_i2c: i2c@01f02400 {
+			compatible = "allwinner,sun6i-a31-i2c";
+			reg = <0x01f02400 0x400>;
+			interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&r_i2c_pins_a>;
+			clocks = <&apb0_gates 6>;
+			clock-frequency = <100000>;
+			resets = <&apb0_reset 6>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
 		r_pio: pinctrl@01f02c00 {
 			compatible = "allwinner,sun8i-h3-r-pinctrl";
 			reg = <0x01f02c00 0x400>;
