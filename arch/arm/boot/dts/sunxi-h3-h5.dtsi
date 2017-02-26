@@ -426,6 +426,12 @@
 			#size-cells = <0>;
 		};
 
+		syscon: syscon@01c00000 {
+			compatible = "syscon",
+				     "allwinner,sun8i-h3-system-controller";
+			reg = <0x01c00000 0x1000>;
+		};
+
 		wdt0: watchdog@01c20ca0 {
 			compatible = "allwinner,sun6i-a31-wdt";
 			reg = <0x01c20ca0 0x20>;
