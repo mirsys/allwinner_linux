@@ -394,7 +394,7 @@ config MTK_THERMAL
 
 config SUN8I_THS
 	tristate "Thermal sensor driver for Allwinner H3"
-	depends on MACH_SUN8I
+	depends on MACH_SUN8I || (ARM64 && ARCH_SUNXI)
 	depends on OF
 	help
 	  Enable this to support thermal reporting on some newer Allwinner SoCs.
