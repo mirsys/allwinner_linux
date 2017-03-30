@@ -189,6 +189,10 @@
 	status = "okay";
 };
 
+&de {
+	status = "okay";
+};
+
 &ehci0 {
 	status = "okay";
 };
@@ -221,9 +225,18 @@
 	allwinner,leds-active-low;
 	status = "okay";
 };
+
+&hdmi {
+	status = "okay";
+};
+
 &ir {
 	pinctrl-names = "default";
 	pinctrl-0 = <&ir_pins_a>;
+	status = "okay";
+};
+
+&lcd0 {
 	status = "okay";
 };
 
