@@ -52,6 +52,9 @@
 			device_type = "cpu";
 			reg = <0>;
 			enable-method = "psci";
+			clocks = <&ccu CLK_CPUX>;
+			clock-latency = <244144>; /* 8 32k periods */
+			clock-frequency = <1200000000>;
 		};
 
 		cpu@1 {
@@ -59,6 +62,7 @@
 			device_type = "cpu";
 			reg = <1>;
 			enable-method = "psci";
+			clock-frequency = <1200000000>;
 		};
 
 		cpu@2 {
@@ -66,6 +70,7 @@
 			device_type = "cpu";
 			reg = <2>;
 			enable-method = "psci";
+			clock-frequency = <1200000000>;
 		};
 
 		cpu@3 {
@@ -73,6 +78,7 @@
 			device_type = "cpu";
 			reg = <3>;
 			enable-method = "psci";
+			clock-frequency = <1200000000>;
 		};
 	};
 
