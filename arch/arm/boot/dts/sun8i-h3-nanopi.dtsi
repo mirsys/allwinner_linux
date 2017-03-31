@@ -53,6 +53,7 @@
 / {
 	aliases {
 		serial0 = &uart0;
+		lcd0 = &lcd0;
 	};
 
 	chosen {
@@ -218,4 +219,16 @@
 
 &usbphy {
 	status = "okay";
+};
+
+&de {
+    status = "okay";
+};
+
+&hdmi {
+    status = "okay";
+};
+
+&lcd0 {
+    status = "okay";
 };
