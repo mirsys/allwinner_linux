@@ -9,6 +9,7 @@
  * - MAC filtering
  * - Jumbo frame
  * - features rx-all (NETIF_F_RXALL_BIT)
+ * - PM runtime
  */
 #include <linux/bitops.h>
 #include <linux/clk.h>

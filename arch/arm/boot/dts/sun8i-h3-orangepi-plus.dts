@@ -42,6 +42,7 @@
 
 /* The Orange Pi Plus is an extended version of the Orange Pi 2 */
 #include "sun8i-h3-orangepi-2.dts"
+#include <dt-bindings/thermal/thermal.h>
 
 / {
 	model = "Xunlong Orange Pi Plus / Plus 2";
@@ -58,6 +59,102 @@
 		enable-active-high;
 		gpio = <&pio 6 11 GPIO_ACTIVE_HIGH>;
 	};
+
+	reg_gmac_3v3: gmac-3v3 {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&gmac_power_pin_orangepi>;
+		regulator-name = "gmac-3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		startup-delay-us = <100000>;
+		enable-active-high;
+		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&cpu0 {
+	operating-points = <
+		/* kHz	  uV */
+		1368000	1500000
+		1344000	1500000
+		1296000	1340000
+		1248000	1340000
+		1224000	1340000
+		1200000	1340000
+		1152000	1320000
+		1104000	1320000
+		1056000	1320000
+		1008000	1200000
+		960000	1200000
+		816000	1100000
+		648000	1100000
+		480000	1040000
+		240000	1040000
+		120000	1040000
+		>;
+	#cooling-cells = <2>;
+	cooling-min-level = <0>;
+	cooling-max-level = <15>;
+	cpu0-supply = <&vdd_cpu>;
+};
+
+&cpu_thermal {
+	trips {
+		cpu_warm: cpu_warm {
+			temperature = <65000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_hot: cpu_hot {
+			temperature = <75000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_very_hot: cpu_very_hot {
+			temperature = <90000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_crit: cpu_crit {
+			temperature = <105000>;
+			hysteresis = <2000>;
+			type = "critical";
+		};
+	};
+
+	cooling-maps {
+		cpu_warm_limit_cpu {
+			trip = <&cpu_warm>;
+			cooling-device = <&cpu0 THERMAL_NO_LIMIT 10>;
+		};
+		cpu_hot_limit_cpu {
+			trip = <&cpu_hot>;
+			cooling-device = <&cpu0 12 12>;
+		};
+		cpu_very_hot_limit_cpu {
+			trip = <&cpu_very_hot>;
+			cooling-device = <&cpu0 14 THERMAL_NO_LIMIT>;
+		};
+	};
+};
+
+&r_i2c {
+	status = "okay";
+
+	vdd_cpu: regulator@65 {
+		compatible = "silergy,sy8106a";
+		reg = <0x65>;
+		regulator-min-microvolt = <1040000>;
+		regulator-max-microvolt = <1500000>;
+		regulator-ramp-delay = <200>;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+};
+
+&ehci0 {
+	status = "okay";
 };
 
 &ehci3 {
@@ -81,13 +178,66 @@
 	bias-pull-up;
 };
 
+&ohci0 {
+	status = "okay";
+};
+
 &pio {
 	usb3_vbus_pin_a: usb3_vbus_pin@0 {
 		pins = "PG11";
 		function = "gpio_out";
 	};
+
+	gmac_power_pin_orangepi: gmac_power_pin@0 {
+		pins = "PD6";
+		function = "gpio_out";
+	};
+
+	usb0_id_detect_pin: usb0_id_detect_pin@0 {
+		pins = "PG12";
+		function = "gpio_in";
+	};
+};
+
+&r_pio {
+	usb0_vbus_pin_opiplus: usb0_vbus_pin@0 {
+		pins = "PL2";
+		function = "gpio_out";
+	};
+};
+
+&reg_usb0_vbus {
+	pinctrl-0 = <&usb0_vbus_pin_opiplus>;
+	gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
+	status = "okay";
+};
+
+&usb_otg {
+	dr_mode = "peripheral";
+	status = "okay";
 };
 
 &usbphy {
 	usb3_vbus-supply = <&reg_usb3_vbus>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_id_detect_pin>;
+	usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
+	usb0_vbus-supply = <&reg_usb0_vbus>;
+};
+
+&mdio {
+	ext_rgmii_phy: ethernet-phy@1 {
+		reg = <0>;
+	};
+};
+
+&emac {
+	pinctrl-names = "default";
+	pinctrl-0 = <&emac_rgmii_pins>;
+	phy-supply = <&reg_gmac_3v3>;
+	phy-handle = <&ext_rgmii_phy>;
+	phy-mode = "rgmii";
+
+	allwinner,leds-active-low;
+	status = "okay";
 };
