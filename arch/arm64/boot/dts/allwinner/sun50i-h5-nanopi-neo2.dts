@@ -117,32 +117,42 @@
 		enable-active-high;
 		gpio = <&pio 3 6 GPIO_ACTIVE_HIGH>;
 	};
+
+	vdd_cpux: gpio-regulator {
+		compatible = "regulator-gpio";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&vdd_cpux_r_npi>;
+
+		regulator-name = "vdd-cpux";
+		regulator-type = "voltage";
+		regulator-boot-on;
+		regulator-always-on;
+		regulator-min-microvolt = <1100000>;
+		regulator-max-microvolt = <1100000>;
+		regulator-ramp-delay = <50>; /* 4ms */
+
+		gpios = <&r_pio 0 6 GPIO_ACTIVE_HIGH>;
+		gpios-states = <0x1>;
+		states = <1100000 0x0
+			  1100000 0x1>;
+	};
 };
 
 &cpu0 {
 	operating-points = <
-		/* kHz	  uV */
-		1368000	1400000
-		1344000	1400000
-		1296000	1340000
-		1248000	1340000
-		1224000	1340000
-		1200000	1320000
-		1152000	1320000
-		1104000	1320000
-		1056000	1320000
-		1008000	1200000
-		960000	1200000
+		1008000	1100000
 		816000	1100000
-		648000	1100000
+		624000	1100000
 		480000	1100000
+		312000	1100000
 		240000	1100000
 		120000	1100000
 		>;
 	#cooling-cells = <2>;
 	cooling-min-level = <0>;
-	cooling-max-level = <15>;
-	cpu0-supply = <&vdd_cpu>;
+	cooling-max-level = <6>;
+	cpu0-supply = <&vdd_cpux>;
 };
 
 &cpu_thermal {
@@ -172,15 +182,15 @@
 	cooling-maps {
 		cpu_warm_limit_cpu {
 			trip = <&cpu_warm>;
-			cooling-device = <&cpu0 THERMAL_NO_LIMIT 10>;
+			cooling-device = <&cpu0 THERMAL_NO_LIMIT 1>;
 		};
 		cpu_hot_limit_cpu {
 			trip = <&cpu_hot>;
-			cooling-device = <&cpu0 12 12>;
+			cooling-device = <&cpu0 2 3>;
 		};
 		cpu_very_hot_limit_cpu {
 			trip = <&cpu_very_hot>;
-			cooling-device = <&cpu0 14 THERMAL_NO_LIMIT>;
+			cooling-device = <&cpu0 5 THERMAL_NO_LIMIT>;
 		};
 	};
 };
@@ -285,6 +295,12 @@
 	leds_r_npi: led_pins@0 {
 		pins = "PL10";
 		function = "gpio_out";
+	};
+	vdd_cpux_r_npi: regulator_pins@0 {
+		allwinner,pins = "PL6";
+		allwinner,function = "gpio_out";
+		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
 	};
 };
 
