@@ -70,16 +70,19 @@
 
 	leds {
 		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&leds_npi>, <&leds_r_npi>;
+
+		status {
+			label = "nanopi:blue:status";
+			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "heartbeat";
+		};
 
 		pwr {
 			label = "nanopi:green:pwr";
 			gpios = <&r_pio 0 10 GPIO_ACTIVE_HIGH>;
 			default-state = "on";
-		};
-
-		status {
-			label = "nanopi:red:status";
-			gpios = <&pio 0 20 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
@@ -267,8 +270,20 @@
 };
 
 &pio {
+	leds_npi: led_pins@0 {
+		pins = "PA10";
+		function = "gpio_out";
+	};
+
 	gmac_power_pin_nanopi: gmac_power_pin@0 {
 		pins = "PD6";
+		function = "gpio_out";
+	};
+};
+
+&r_pio {
+	leds_r_npi: led_pins@0 {
+		pins = "PL10";
 		function = "gpio_out";
 	};
 };
