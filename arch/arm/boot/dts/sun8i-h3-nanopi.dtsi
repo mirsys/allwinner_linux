@@ -54,6 +54,7 @@
 	aliases {
 		serial0 = &uart0;
 		lcd0 = &lcd0;
+		ethernet0 = &emac;
 	};
 
 	chosen {
@@ -255,4 +256,8 @@
 
 &lcd0 {
     status = "okay";
+};
+
+&emac {
+	local-mac-address = [ 00 00 00 00 00 00 ];	
 };

@@ -67,6 +67,5 @@
     phy-handle = <&int_mii_phy>;
     phy-mode = "mii";
     allwinner,leds-active-low;
-    local-mac-address = [ 00 00 00 00 00 00 ];
     status = "okay";
 };
