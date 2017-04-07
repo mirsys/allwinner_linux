@@ -207,8 +207,17 @@
 	cd-inverted;
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin>;
+	boot_device = <0>;
 	status = "okay";
 	vmmc-supply = <&reg_vcc3v3>;
+};
+
+&mmc1 {
+	boot_device = <0>;
+};
+
+&mmc2 {
+	boot_device = <0>;
 };
 
 &pio {

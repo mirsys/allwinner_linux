@@ -345,6 +345,8 @@ struct mmc_host *mmc_alloc_host(int extra, struct device *dev)
 {
 	int err;
 	struct mmc_host *host;
+	u32 boot_device;
+	struct device_node *np = dev->of_node;
 
 	host = kzalloc(sizeof(struct mmc_host) + extra, GFP_KERNEL);
 	if (!host)
@@ -353,7 +355,15 @@ struct mmc_host *mmc_alloc_host(int extra, struct device *dev)
 	/* scanning will be enabled when we're ready */
 	host->rescan_disable = 1;
 
-	err = ida_simple_get(&mmc_host_ida, 0, 0, GFP_KERNEL);
+	if (!of_property_read_u32(np, "boot_device", &boot_device)) {
+		if (boot_device == 1) {
+			err = 0;
+		} else {
+			err = ida_simple_get(&mmc_host_ida, 1, 0, GFP_KERNEL);
+		}
+	} else {
+		err = ida_simple_get(&mmc_host_ida, 0, 0, GFP_KERNEL);
+	}
 	if (err < 0) {
 		kfree(host);
 		return NULL;
