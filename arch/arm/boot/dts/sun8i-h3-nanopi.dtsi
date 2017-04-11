@@ -212,10 +212,6 @@
 	vmmc-supply = <&reg_vcc3v3>;
 };
 
-&mmc1 {
-	boot_device = <0>;
-};
-
 &mmc2 {
 	boot_device = <0>;
 };

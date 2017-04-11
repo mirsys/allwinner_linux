@@ -362,7 +362,7 @@ struct mmc_host *mmc_alloc_host(int extra, struct device *dev)
 			err = ida_simple_get(&mmc_host_ida, 1, 0, GFP_KERNEL);
 		}
 	} else {
-		err = ida_simple_get(&mmc_host_ida, 0, 0, GFP_KERNEL);
+		err = ida_simple_get(&mmc_host_ida, 2, 0, GFP_KERNEL);
 	}
 	if (err < 0) {
 		kfree(host);
