@@ -69,7 +69,7 @@ static const char * const sun8i_board_dt_compat[] = {
 	NULL,
 };
 
-DT_MACHINE_START(SUN8I_DT, "Allwinner sun8i Family")
+DT_MACHINE_START(SUN8I_DT, "sun8i")
 	.init_time	= sun6i_timer_init,
 	.dt_compat	= sun8i_board_dt_compat,
 MACHINE_END
