@@ -97,3 +97,11 @@
     /* eMMC is missing pull-ups */
     bias-pull-up;
 };
+
+&i2c0 {
+    status = "okay";
+};
+
+&i2c2 {
+    status = "okay";
+};

@@ -53,3 +53,7 @@
     allwinner,leds-active-low;
     status = "okay";
 };
+
+&i2c0 {
+    status = "okay";
+};
