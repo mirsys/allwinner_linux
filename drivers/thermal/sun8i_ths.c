@@ -71,7 +71,7 @@ static int sun8i_ths_get_temp(void *_data, int *out)
 
 	/* Formula and parameters from the Allwinner 3.4 kernel */
 	/* Compatible with Allwinner Linux 3.4 */
-	*out = (217000 - (int)((data->temp * 1000000) / 8253)) / 1000;
+	*out = 217000 - (int)((data->temp * 1000000) / 8253);
 	return 0;
 }
 
