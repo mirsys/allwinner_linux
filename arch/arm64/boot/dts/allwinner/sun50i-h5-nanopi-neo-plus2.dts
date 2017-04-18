@@ -141,7 +141,8 @@
 
 &cpu0 {
 	operating-points = <
-		1008000	1300000
+		1248000 1300000
+		1008000	1100000
 		816000	1100000
 		624000	1100000
 		480000	1100000
@@ -151,7 +152,7 @@
 		>;
 	#cooling-cells = <2>;
 	cooling-min-level = <0>;
-	cooling-max-level = <6>;
+	cooling-max-level = <7>;
 	cpu0-supply = <&vdd_cpux>;
 };
 
