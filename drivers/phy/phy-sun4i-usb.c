@@ -742,6 +742,10 @@ static int sun4i_usb_phy_probe(struct platform_device *pdev)
 			dev_err(dev, "Err requesting id-det-irq: %d\n", ret);
 			return ret;
 		}
+	} else {
+		// host mode don't need poll scan
+		if (data->dr_mode == USB_DR_MODE_HOST)
+			data->id_det_gpio = NULL;
 	}
 
 	data->vbus_det_irq = gpiod_to_irq(data->vbus_det_gpio);
@@ -756,6 +760,9 @@ static int sun4i_usb_phy_probe(struct platform_device *pdev)
 			sun4i_usb_phy_remove(pdev); /* Stop detect work */
 			return ret;
 		}
+	} else {
+		if (data->dr_mode == USB_DR_MODE_HOST)
+			data->vbus_det_gpio = NULL;
 	}
 
 	if (data->vbus_power_supply) {

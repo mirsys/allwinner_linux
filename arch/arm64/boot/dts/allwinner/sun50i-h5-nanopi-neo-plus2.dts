@@ -96,16 +96,6 @@
 		};
 	};
 
-	reg_usb0_vbus: usb0-vbus {
-		compatible = "regulator-fixed";
-		regulator-name = "usb0-vbus";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		enable-active-high;
-		gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
-		status = "okay";
-	};
-
 	reg_gmac_3v3: gmac-3v3 {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
@@ -347,13 +337,11 @@
 };
 
 &usb_otg {
-	dr_mode = "otg";
+	dr_mode = "host";
 	status = "okay";
 };
 
 &usbphy {
-	/* USB Type-A ports' VBUS is always on */
 	usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
-	usb0_vbus-supply = <&reg_usb0_vbus>;
 	status = "okay";
 };
