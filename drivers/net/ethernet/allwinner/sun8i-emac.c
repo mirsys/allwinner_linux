@@ -431,7 +431,7 @@ static int sun8i_emac_rx_skb(struct net_device *ndev, int i)
 	ddesc->buf_addr = cpu_to_le32(ddesc->buf_addr);
 	ddesc->ctl |= cpu_to_le32(DESC_BUF_MAX);
 	/* EMAC_COULD_BE_USED_BY_DMA must be the last value written */
-	wmb();
+	dma_wmb();
 	ddesc->status = EMAC_COULD_BE_USED_BY_DMA;
 
 	return 0;
@@ -455,7 +455,7 @@ static void sun8i_emac_stop_tx(struct net_device *ndev)
 	writel(v, priv->base + EMAC_TX_CTL1);
 
 	/* We must be sure that all is stopped before leaving this function */
-	wmb();
+	dma_wmb();
 }
 
 static void sun8i_emac_stop_rx(struct net_device *ndev)
@@ -474,7 +474,7 @@ static void sun8i_emac_stop_rx(struct net_device *ndev)
 	writel(v, priv->base + EMAC_RX_CTL1);
 
 	/* We must be sure that all is stopped before leaving this function */
-	wmb();
+	dma_wmb();
 }
 
 static void sun8i_emac_start_rx(struct net_device *ndev)
@@ -708,7 +708,7 @@ static int sun8i_emac_rx_from_ddesc(struct net_device *ndev, int i)
 discard_frame:
 	ddesc->ctl = cpu_to_le32(DESC_BUF_MAX);
 	/* EMAC_COULD_BE_USED_BY_DMA must be the last value written */
-	wmb();
+	dma_wmb();
 	ddesc->status = EMAC_COULD_BE_USED_BY_DMA;
 	return 0;
 }
@@ -790,7 +790,7 @@ static int sun8i_emac_complete_xmit(struct net_device *ndev, int budget)
 		priv->txl[priv->tx_dirty].map = 0;
 		ddesc->ctl = 0;
 		/* setting status to DCLEAN is the last value to be set */
-		wmb();
+		dma_wmb();
 		ddesc->status = DCLEAN;
 		work++;
 
@@ -1658,7 +1658,7 @@ static netdev_tx_t sun8i_emac_xmit(struct sk_buff *skb, struct net_device *ndev)
 
 	/* frame begin */
 	first->ctl |= EMAC_DSC_TX_FIRST;
-	wmb();/* EMAC_COULD_BE_USED_BY_DMA must be the last value written */
+	dma_wmb();/* EMAC_COULD_BE_USED_BY_DMA must be the last value written */
 	first->status = EMAC_COULD_BE_USED_BY_DMA;
 	priv->tx_slot = i;
 
@@ -1685,13 +1685,13 @@ xmit_error:
 	/* clean descritors from rbd_first to i */
 	ddesc->ctl = 0;
 	/* setting status to DCLEAN is the last value to be set */
-	wmb();
+	dma_wmb();
 	ddesc->status = DCLEAN;
 	do {
 		ddesc = priv->dd_tx + rbd_first;
 		ddesc->ctl = 0;
 		/* setting status to DCLEAN is the last value to be set */
-		wmb();
+		dma_wmb();
 		ddesc->status = DCLEAN;
 		rb_inc(&rbd_first, priv->nbdesc_tx);
 	} while (rbd_first != i);
