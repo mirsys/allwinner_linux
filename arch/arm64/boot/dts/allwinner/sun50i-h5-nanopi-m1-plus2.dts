@@ -49,8 +49,8 @@
 #include <dt-bindings/thermal/thermal.h>
 
 / {
-	model = "FriendlyElec Nano Pi NEO 2";
-	compatible = "friendlyelec,nanopi-neo2", "allwinner,sun50i-h5";
+	model = "FriendlyElec Nano Pi M1 Plus2";
+	compatible = "friendlyelec,nanopi-m1-plus2", "allwinner,sun50i-h5";
 
 	reg_vcc3v3: vcc3v3 {
 		compatible = "regulator-fixed";
@@ -137,6 +137,14 @@
 		states = <1100000 0x0
 			  1100000 0x1>;
 	};
+
+    wifi_pwrseq: wifi_pwrseq {
+        compatible = "mmc-pwrseq-simple";
+        pinctrl-names = "default";
+        pinctrl-0 = <&wifi_en_npi>;
+        reset-gpios = <&r_pio 0 7 GPIO_ACTIVE_LOW>; /* PL7 */
+        post-power-on-delay-ms = <200>;
+    };
 };
 
 &cpu0 {
@@ -283,6 +291,23 @@
 	status = "okay";
 };
 
+&mmc1 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&mmc1_pins_a>;
+    vmmc-supply = <&reg_vcc3v3>;
+    vqmmc-supply = <&reg_vcc3v3>;
+    mmc-pwrseq = <&wifi_pwrseq>;
+    bus-width = <4>;
+    non-removable;
+    boot_device = <0>;
+    status = "okay";
+
+    brcmf: bcrmf@1 {
+        reg = <1>;
+        compatible = "brcm,bcm4329-fmac";
+    };
+};
+
 &ohci0 {
 	status = "okay";
 };
@@ -322,6 +347,10 @@
 		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
 		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
 	};
+	wifi_en_npi: wifi_en_pin {
+        pins = "PL7";
+        function = "gpio_out";
+    };
 };
 
 &r_i2c {
