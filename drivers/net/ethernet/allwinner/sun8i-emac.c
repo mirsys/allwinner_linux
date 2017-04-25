@@ -905,8 +905,8 @@ static int sun8i_mdio_write(struct mii_bus *bus, int phy_addr, int phy_reg,
 	reg |= MDIO_CMD_MII_WRITE;
 	reg |= MDIO_CMD_MII_BUSY;
 
-	writel(reg, priv->base + EMAC_MDIO_CMD);
 	writel(data, priv->base + EMAC_MDIO_DATA);
+	writel(reg, priv->base + EMAC_MDIO_CMD);
 
 	err = readl_poll_timeout(priv->base + EMAC_MDIO_CMD, reg,
 				 !(reg & MDIO_CMD_MII_BUSY), 100, 10000);
