@@ -334,3 +334,24 @@
 	usb0_vbus-supply = <&reg_usb0_vbus>;
 	status = "okay";
 };
+
+&i2c0 {
+    status = "okay";
+};
+
+&i2c1 {
+    status = "okay";
+};
+
+&i2c2 {
+    status = "okay";
+};
+
+&spi0 {
+    status = "okay";
+    spidev0: spi@0 {
+        compatible = "nanopi,spidev";
+        reg = <0>;
+        spi-max-frequency = <10000000>;
+    };
+};
