@@ -97,6 +97,10 @@
 #define EMAC_FRM_FLT_CTL		BIT(13)
 #define EMAC_FRM_FLT_MULTICAST		BIT(16)
 
+/* Mac address */
+#define EMAC_MAX_MACADDR		8
+#define MAC_ADDR_TYPE_DST BIT(31)
+
 /* Used in BASIC_CTL0 */
 #define EMAC_BCTL0_FD			BIT(0)
 #define EMAC_BCTL0_LOOPBACK		BIT(1)
@@ -516,9 +520,16 @@ static void sun8i_emac_set_macaddr(struct sun8i_emac_priv *priv,
 {
 	u32 v;
 
+	if (index > 7) {
+		dev_err(priv->dev, "Too many MAC addr\n");
+		return;
+	}
+
 	dev_info(priv->dev, "device MAC address slot %d %pM", index, addr);
 
 	v = (addr[5] << 8) | addr[4];
+	if (index > 0)
+		v |= MAC_ADDR_TYPE_DST;
 	writel(v, priv->base + EMAC_MACADDR_HI + index * 8);
 
 	v = (addr[3] << 24) | (addr[2] << 16) | (addr[1] << 8) | addr[0];
@@ -1758,21 +1769,33 @@ static void sun8i_emac_set_rx_mode(struct net_device *ndev)
 	u32 v = 0;
 	int i = 0;
 	struct netdev_hw_addr *ha;
+	int macaddrs = netdev_uc_count(ndev) + netdev_mc_count(ndev) + 1;
 
-	/* Receive all multicast frames */
-	v |= EMAC_FRM_FLT_MULTICAST;
 	/* Receive all control frames */
 	v |= EMAC_FRM_FLT_CTL;
-	if (ndev->flags & IFF_PROMISC)
-		v |= EMAC_FRM_FLT_RXALL;
-	if (netdev_uc_count(ndev) > 7) {
-		v |= EMAC_FRM_FLT_RXALL;
-	} else {
-		netdev_for_each_uc_addr(ha, ndev) {
-			i++;
-			sun8i_emac_set_macaddr(priv, ha->addr, i);
+
+        if (ndev->flags & IFF_PROMISC) {
+                v = EMAC_FRM_FLT_RXALL;
+        } else if (ndev->flags & IFF_ALLMULTI) {
+                v |= EMAC_FRM_FLT_MULTICAST;
+        } else if (macaddrs <= EMAC_MAX_MACADDR) {
+		if (!netdev_mc_empty(ndev)) {
+			netdev_for_each_mc_addr(ha, ndev) {
+				i++;
+				sun8i_emac_set_macaddr(priv, ha->addr, i);
+			}
 		}
+		if (!netdev_uc_empty(ndev)) {
+			netdev_for_each_uc_addr(ha, ndev) {
+				i++;
+				sun8i_emac_set_macaddr(priv, ha->addr, i);
+			}
+		}
+	} else {
+		netdev_info(ndev, "Too many address, switching to promiscuous\n");
+		v = EMAC_FRM_FLT_RXALL;
 	}
+
 	writel(v, priv->base + EMAC_RX_FRM_FLT);
 }
 
