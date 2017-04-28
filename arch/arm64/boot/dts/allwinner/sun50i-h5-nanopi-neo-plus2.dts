@@ -61,6 +61,7 @@
 
 	aliases {
 		serial0 = &uart0;
+		serial3 = &uart3;
 		ethernet0 = &emac;
 	};
 
@@ -136,6 +137,16 @@
         post-power-on-delay-ms = <200>;
     };
 
+	rfkill_bt {
+		compatible = "rfkill-gpio";
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_pwr_pin>;
+		reset-gpios = <&pio 6 13 GPIO_ACTIVE_HIGH>; /* PG13 */
+		clocks = <&osc32k>;
+		clock-frequency = <32768>;
+		rfkill-name = "sunxi-bt";
+		rfkill-type = "bluetooth";
+	};
 };
 
 &cpu0 {
@@ -320,9 +331,12 @@
 		pins = "PA10";
 		function = "gpio_out";
 	};
-
 	gmac_power_pin_nanopi: gmac_power_pin@0 {
 		pins = "PD6";
+		function = "gpio_out";
+	};
+	bt_pwr_pin: bt_pwr_pin@0 {
+		pins = "PG13";
 		function = "gpio_out";
 	};
 };
@@ -360,6 +374,12 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart2_pins>;
 	status = "disabled";
+};
+
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart3_pins>, <&uart3_rts_cts_pins>;
+	status = "okay";
 };
 
 &usb_otg {

@@ -73,6 +73,9 @@
 #define SUN6I_ALARM_CONFIG			0x0050
 #define SUN6I_ALARM_CONFIG_WAKEUP		BIT(0)
 
+#define SUN6I_LOSC_OUT_GATING		0x0060
+#define SUN6I_LOSC_OUT_GATING_EN	BIT(0)
+
 /*
  * Get date values
  */
@@ -210,6 +213,9 @@ static void __init sun6i_rtc_clk_init(struct device_node *node)
 	/* Switch to the external, more precise, oscillator */
 	writel(SUN6I_LOSC_CTRL_KEY | SUN6I_LOSC_CTRL_EXT_OSC,
 	       rtc->base + SUN6I_LOSC_CTRL);
+
+	writel(SUN6I_LOSC_OUT_GATING_EN,
+			   rtc->base + SUN6I_LOSC_OUT_GATING);
 
 	/* Yes, I know, this is ugly. */
 	sun6i_rtc = rtc;

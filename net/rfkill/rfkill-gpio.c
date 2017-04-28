@@ -35,7 +35,7 @@ struct rfkill_gpio_data {
 
 	struct rfkill		*rfkill_dev;
 	struct clk		*clk;
-
+	int             clk_frequency; 
 	bool			clk_enabled;
 };
 
@@ -44,13 +44,13 @@ static int rfkill_gpio_set_power(void *data, bool blocked)
 	struct rfkill_gpio_data *rfkill = data;
 
 	if (!blocked && !IS_ERR(rfkill->clk) && !rfkill->clk_enabled)
-		clk_enable(rfkill->clk);
+		clk_prepare_enable(rfkill->clk);
 
 	gpiod_set_value_cansleep(rfkill->shutdown_gpio, !blocked);
 	gpiod_set_value_cansleep(rfkill->reset_gpio, !blocked);
 
 	if (blocked && !IS_ERR(rfkill->clk) && rfkill->clk_enabled)
-		clk_disable(rfkill->clk);
+		clk_disable_unprepare(rfkill->clk);
 
 	rfkill->clk_enabled = !blocked;
 
@@ -96,8 +96,9 @@ static int rfkill_gpio_probe(struct platform_device *pdev)
 	if (!rfkill)
 		return -ENOMEM;
 
-	device_property_read_string(&pdev->dev, "name", &rfkill->name);
-	device_property_read_string(&pdev->dev, "type", &type_name);
+	device_property_read_string(&pdev->dev, "rfkill-name", &rfkill->name);
+	device_property_read_string(&pdev->dev, "rfkill-type", &type_name);
+	device_property_read_u32(&pdev->dev, "clock-frequency", &rfkill->clk_frequency);
 
 	if (!rfkill->name)
 		rfkill->name = dev_name(&pdev->dev);
@@ -111,6 +112,9 @@ static int rfkill_gpio_probe(struct platform_device *pdev)
 	}
 
 	rfkill->clk = devm_clk_get(&pdev->dev, NULL);
+	if (!IS_ERR(rfkill->clk) && rfkill->clk_frequency > 0) {
+		clk_set_rate(rfkill->clk, rfkill->clk_frequency); 
+	}
 
 	gpio = devm_gpiod_get_optional(&pdev->dev, "reset", GPIOD_OUT_LOW);
 	if (IS_ERR(gpio))
@@ -167,6 +171,10 @@ static const struct acpi_device_id rfkill_acpi_match[] = {
 };
 MODULE_DEVICE_TABLE(acpi, rfkill_acpi_match);
 #endif
+static const struct of_device_id rfkill_of_match[] = { 
+	{ .compatible = "rfkill-gpio", }, 
+	{},
+}; 
 
 static struct platform_driver rfkill_gpio_driver = {
 	.probe = rfkill_gpio_probe,
@@ -174,6 +182,7 @@ static struct platform_driver rfkill_gpio_driver = {
 	.driver = {
 		.name = "rfkill_gpio",
 		.acpi_match_table = ACPI_PTR(rfkill_acpi_match),
+		.of_match_table = of_match_ptr(rfkill_of_match), 
 	},
 };
 
