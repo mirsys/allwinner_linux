@@ -1048,6 +1048,8 @@ static int sun8i_emac_set_syscon(struct net_device *ndev)
 			if (of_property_read_bool(priv->phy_node,
 						  "allwinner,leds-active-low"))
 				reg |= H3_EPHY_LED_POL;
+			else
+				reg &= ~H3_EPHY_LED_POL;
 
 			ret = of_mdio_parse_addr(priv->dev, priv->phy_node);
 			if (ret < 0) {
