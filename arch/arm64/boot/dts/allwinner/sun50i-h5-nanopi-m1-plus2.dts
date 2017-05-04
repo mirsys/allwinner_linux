@@ -65,6 +65,7 @@
 		serial2 = &uart2;
 		serial3 = &uart3;
 		ethernet0 = &emac;
+        lcd0 = &lcd0;
 	};
 
 	chosen {
