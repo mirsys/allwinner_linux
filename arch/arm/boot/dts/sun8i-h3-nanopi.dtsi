@@ -53,6 +53,9 @@
 / {
 	aliases {
 		serial0 = &uart0;
+		serial1 = &uart1;
+		serial2 = &uart2;
+		serial3 = &uart3;
 		lcd0 = &lcd0;
 		ethernet0 = &emac;
 	};
