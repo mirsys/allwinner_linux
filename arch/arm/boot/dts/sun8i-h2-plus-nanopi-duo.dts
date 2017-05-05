@@ -45,6 +45,24 @@
 / {
 	model = "FriendlyARM NanoPi Duo";
 	compatible = "friendlyarm,nanopi-duo", "allwinner,sun8i-h3";
+
+    vdd_wifi: vdd_wifi {
+        compatible = "regulator-fixed";
+        regulator-name = "wifi";
+        regulator-min-microvolt = <1800000>;
+        regulator-max-microvolt = <1800000>;
+        gpio = <&r_pio 0 7 GPIO_ACTIVE_HIGH>;                // GPIOL7/WIFI_POWER_EN
+        startup-delay-us = <70000>;
+        enable-active-high;
+    };
+
+    wifi_pwrseq: wifi_pwrseq {
+        compatible = "mmc-pwrseq-simple";
+        pinctrl-names = "default";
+        pinctrl-0 = <&wifi_en_npi>;
+        reset-gpios = <&pio 6 13 GPIO_ACTIVE_LOW>;          // GPIOG13/WL_RESTN
+        post-power-on-delay-ms = <50>;
+    };
 };
 
 &emac {
@@ -64,4 +82,38 @@
 
 &spi0 {
     status = "okay";
+};
+
+&mmc1 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&mmc1_pins_a>;
+    vqmmc-supply = <&vdd_wifi>;
+    vmmc-supply = <&reg_vcc3v3>;
+    mmc-pwrseq = <&wifi_pwrseq>;
+    bus-width = <4>;
+    non-removable;
+    status = "okay";
+
+    xr819wifi: xr819wifi@1 {
+            reg = <1>;
+            compatible = "xradio,xr819";
+            pinctrl-names = "default";
+            pinctrl-0 = <&wifi_wake>;
+            interrupt-parent = <&pio>;
+            interrupts = <6 10 IRQ_TYPE_EDGE_RISING>;
+            interrupt-names = "host-wake";
+            local-mac-address = [dc 44 6d c0 ff ee];
+    };
+};
+
+&pio {
+    wifi_wake: wifi_wake@0 {
+        pins = "PG10";
+        function = "irq";
+        pull = <SUN4I_PINCTRL_NO_PULL>;
+    };
+    wifi_en_npi: wifi_en_pin {
+        pins = "PG13";
+        function = "gpio_out";
+    };
 };
