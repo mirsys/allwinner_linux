@@ -53,11 +53,25 @@
         reset-gpios = <&r_pio 0 7 GPIO_ACTIVE_LOW>; /* PL7 */
         post-power-on-delay-ms = <200>;
     };
+    rfkill_bt {
+        compatible = "rfkill-gpio";
+        pinctrl-names = "default";
+        pinctrl-0 = <&bt_pwr_pin>;
+        reset-gpios = <&pio 6 13 GPIO_ACTIVE_HIGH>; /* PG13 */
+        clocks = <&osc32k>;
+        clock-frequency = <32768>;
+        rfkill-name = "sunxi-bt";
+        rfkill-type = "bluetooth";
+    };
 };
 
 &r_pio {
     wifi_en_npi: wifi_en_pin {
         pins = "PL7";
+        function = "gpio_out";
+    };
+    bt_pwr_pin: bt_pwr_pin@0 {
+        pins = "PG13";
         function = "gpio_out";
     };
 };
@@ -107,5 +121,11 @@
 };
 
 &spi0 {
+    status = "okay";
+};
+
+&uart3 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&uart3_pins>, <&uart3_rts_cts_pins>;
     status = "okay";
 };
