@@ -395,7 +395,7 @@
 &uart1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart1_pins>;
-	status = "disabled";
+	status = "okay";
 };
 
 &uart2 {
