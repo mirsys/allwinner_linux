@@ -56,8 +56,15 @@
 		serial1 = &uart1;
 		serial2 = &uart2;
 		serial3 = &uart3;
-		lcd0 = &lcd0;
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		i2c2 = &i2c2;
+		spi0 = &spi0;
+		spi1 = &spi1;
+		mmc0 = &mmc0;
+		mmc2 = &mmc2;
 		ethernet0 = &emac;
+		lcd0 = &lcd0;
 	};
 
 	chosen {
