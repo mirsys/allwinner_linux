@@ -69,6 +69,7 @@
 		i2c2 = &i2c2;
 		spi0 = &spi0;
 		spi1 = &spi1;
+		pwm0 = &pwm;
 		mmc0 = &mmc0;
 		mmc2 = &mmc2;
 		ethernet0 = &emac;
@@ -452,4 +453,10 @@
         reg = <0>;
         spi-max-frequency = <10000000>;
     };
+};
+
+&pwm {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pwm0_pins>;
+    status = "disabled";
 };

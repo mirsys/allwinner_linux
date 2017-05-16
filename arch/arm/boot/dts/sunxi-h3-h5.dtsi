@@ -473,6 +473,11 @@
 				pins = "PA15", "PA16";
 				function = "uart3";
 			};
+
+			pwm0_pins: pwm0 {
+				pins = "PA5";
+				function = "pwm0";
+			};
 		};
 
 		ths: ths@01c25000 {
