@@ -194,6 +194,8 @@ static void __init setup_machine_fdt(phys_addr_t dt_phys)
 	}
 
 	dump_stack_set_arch_desc("%s (DT)", of_flat_dt_get_machine_name());
+	pr_info("Machine model: %s\n", of_flat_dt_get_machine_name());
+	strcpy(dt_machine_name, of_flat_dt_get_machine_name());
 }
 
 static void __init request_standard_resources(void)

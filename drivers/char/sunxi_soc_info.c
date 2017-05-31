@@ -1,6 +1,10 @@
 #include <linux/device.h>
 #include <linux/gpio.h>
 #include <linux/module.h>
+#include <linux/of_fdt.h>
+
+#define BOARD_TYPE_NANOPI_DUO 	   (4)
+#define BOARD_TYPE_NANOPI_NEO_CORE (5)
 
 static unsigned int sunxi_get_board_vendor_id(void)
 {
@@ -30,7 +34,7 @@ ssize_t sys_info_show(struct class *class, struct class_attribute *attr, char *b
     size_t size = 0;
 
     /* platform */
-    size += sprintf(buf + size, "sunxi_platform    : Sun8iw7p1\n");
+    size += sprintf(buf + size, "sunxi_platform    : Sun8iw7p1/Sun50iw2p1\n");
 
     /* secure */
     size += sprintf(buf + size, "sunxi_secure      : normal\n");
@@ -45,11 +49,20 @@ ssize_t sys_info_show(struct class *class, struct class_attribute *attr, char *b
     size += sprintf(buf + size, "sunxi_batchno     : unsupported\n");
 
     /* Board vendor id*/
-    databuf[0] = sunxi_get_board_vendor_id();
-    size += sprintf(buf + size, "sunxi_board_id    : %d(%d)\n", (databuf[0]<0)?(-1):(databuf[0]&~(0xe0)), (databuf[0]<0)?(-1):((databuf[0]>>5)&0x01));
-
+    if (!strcasecmp("FriendlyARM NanoPi Duo", dt_machine_name))
+    	size += sprintf(buf + size, "sunxi_board_id    : %d(0)\n", BOARD_TYPE_NANOPI_DUO);
+    else if (!strcasecmp("FriendlyARM NanoPi NEO Core", dt_machine_name))
+    	size += sprintf(buf + size, "sunxi_board_id    : %d(0)\n", BOARD_TYPE_NANOPI_NEO_CORE);
+    else {
+    	databuf[0] = sunxi_get_board_vendor_id();
+    	size += sprintf(buf + size, "sunxi_board_id    : %d(%d)\n", (databuf[0]<0)?(-1):(databuf[0]&~(0xe0)), (databuf[0]<0)?(-1):((databuf[0]>>5)&0x01));
+	}
+	
     /*  Board manufacturer  */
     size += sprintf(buf + size, "board_manufacturer: FriendlyElec\n");
+
+	/* Board name */
+    size += sprintf(buf + size, "board_name        : %s\n", dt_machine_name);
     return size;
 }
 

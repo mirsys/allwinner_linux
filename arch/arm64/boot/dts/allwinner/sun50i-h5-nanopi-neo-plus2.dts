@@ -295,7 +295,6 @@
     mmc-pwrseq = <&wifi_pwrseq>;
     bus-width = <4>;
     non-removable;
-    boot_device = <0>;
     status = "okay";
 
     brcmf: bcrmf@1 {
