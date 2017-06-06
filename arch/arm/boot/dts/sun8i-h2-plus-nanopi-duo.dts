@@ -117,3 +117,12 @@
         function = "gpio_out";
     };
 };
+
+&spi0 {
+    status = "okay";
+    spidev0: spi@0 {
+        compatible = "nanopi,spidev";
+        reg = <0>;
+        spi-max-frequency = <10000000>;
+    };
+};
