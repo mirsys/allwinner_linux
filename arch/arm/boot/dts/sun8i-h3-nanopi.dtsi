@@ -66,6 +66,8 @@
 		mmc2 = &mmc2;
 		ethernet0 = &emac;
 		lcd0 = &lcd0;
+		i2s0 = &i2s0;
+		pcm5102a = &pcm5102a;
 	};
 
 	chosen {
@@ -122,6 +124,12 @@
 		states = <1100000 0x0
 			  1300000 0x1>;
 	};
+
+    pcm5102a: pcm5102a-codec {
+        #sound-dai-cells = <0>;
+        compatible = "ti,pcm5102a";
+        status = "disabled";
+    };
 };
 
 &cpu0 {

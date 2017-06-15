@@ -74,6 +74,8 @@
 		mmc2 = &mmc2;
 		ethernet0 = &emac;
 		lcd0 = &lcd0;
+		i2s0 = &i2s0;
+		pcm5102a = &pcm5102a;
 	};
 
 	chosen {
@@ -158,6 +160,12 @@
 		rfkill-name = "sunxi-bt";
 		rfkill-type = "bluetooth";
 	};
+
+	pcm5102a: pcm5102a-codec {
+        #sound-dai-cells = <0>;
+        compatible = "ti,pcm5102a";
+        status = "disabled";
+    };
 };
 
 &cpu0 {
@@ -412,6 +420,7 @@
 };
 
 &i2c1 {
+    /* no I2C1 for I2S0 */
     status = "okay";
 };
 
@@ -431,5 +440,10 @@
 &pwm {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pwm0_pins>;
+	status = "disabled";
+};
+
+&i2s0 {
+	sound-dai = <&pcm5102a>;
 	status = "disabled";
 };

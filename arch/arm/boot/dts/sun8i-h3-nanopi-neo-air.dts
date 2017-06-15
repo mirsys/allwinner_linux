@@ -116,6 +116,11 @@
     status = "okay";
 };
 
+&i2c1 {
+    /* no I2C1 for I2S0 */
+    status = "okay";
+};
+
 &i2c2 {
     status = "okay";
 };
@@ -133,4 +138,9 @@
     pinctrl-names = "default";
     pinctrl-0 = <&uart3_pins>, <&uart3_rts_cts_pins>;
     status = "okay";
+};
+
+&i2s0 {
+    sound-dai = <&pcm5102a>;
+    status = "disabled";
 };
