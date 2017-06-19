@@ -297,6 +297,9 @@ static int sun6i_spi_transfer_one(struct spi_master *master,
 	out:
 		sun6i_spi_write(sspi, SUN6I_INT_CTL_REG, 0);
 		unsend-=step;
+		if (ret < 0) {
+			break;
+		}	
 	}
 
 	return ret;
