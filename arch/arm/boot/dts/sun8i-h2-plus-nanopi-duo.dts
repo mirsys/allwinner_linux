@@ -43,7 +43,7 @@
 #include "sun8i-h3-nanopi.dtsi"
 
 / {
-	model = "FriendlyARM NanoPi Duo";
+	model = "FriendlyElec NanoPi-Duo";
 	compatible = "friendlyarm,nanopi-duo", "allwinner,sun8i-h3";
 
     vdd_wifi: vdd_wifi {
@@ -80,10 +80,6 @@
         };
 };
 
-&spi0 {
-    status = "okay";
-};
-
 &mmc1 {
     pinctrl-names = "default";
     pinctrl-0 = <&mmc1_pins_a>;
@@ -116,24 +112,6 @@
         pins = "PG13";
         function = "gpio_out";
     };
-};
-
-&spi0 {
-    status = "okay";
-    spi-flash@0 {
-        #address-cells = <1>;
-        #size-cells = <1>;
-        compatible = "mxicy,mx25l1606e";
-        reg = <0>;
-        spi-max-frequency = <50000000>;
-        mode = <0>;
-
-        partition@0 {
-            reg = <0x0 0x200000>;
-            label = "spi-flash";
-        };
-    };
-
 };
 
 &spi1 {

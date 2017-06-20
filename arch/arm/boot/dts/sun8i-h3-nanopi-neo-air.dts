@@ -43,7 +43,7 @@
 #include "sun8i-h3-nanopi.dtsi"
 
 / {
-	model = "FriendlyARM NanoPi NEO Air";
+	model = "FriendlyElec NanoPi-NEO-Air";
 	compatible = "friendlyarm,nanopi-neo-air", "allwinner,sun8i-h3";
 
     wifi_pwrseq: wifi_pwrseq {
@@ -123,15 +123,6 @@
 
 &i2c2 {
     status = "okay";
-};
-
-&spi0 {
-    status = "okay";
-    spidev0: spi@0 {
-        compatible = "nanopi,spidev";
-        reg = <0>;
-        spi-max-frequency = <10000000>;
-    };
 };
 
 &uart3 {
