@@ -65,13 +65,16 @@
     };
 };
 
+&pio {
+    bt_pwr_pin: bt_pwr_pin@0 {
+        pins = "PG13";
+        function = "gpio_out";
+    };
+};
+
 &r_pio {
     wifi_en_npi: wifi_en_pin {
         pins = "PL7";
-        function = "gpio_out";
-    };
-    bt_pwr_pin: bt_pwr_pin@0 {
-        pins = "PG13";
         function = "gpio_out";
     };
 };
