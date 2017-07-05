@@ -43,7 +43,7 @@
 #include "sun8i-h3-nanopi.dtsi"
 
 / {
-	model = "FriendlyARM NanoPi NEO Core";
+	model = "FriendlyElec NanoPi-NEO-Core";
 	compatible = "friendlyarm,nanopi-neo-core", "allwinner,sun8i-h3";
 };
 
@@ -62,9 +62,14 @@
         };
 };
 
-&spi0 {
+&i2c1 {
+    /* no I2C1 for I2S0 */
     status = "okay";
-    spidev0: spi@0 {
+};
+
+&spi1 {
+    status = "okay";
+    spidev1: spi@1 {
         compatible = "nanopi,spidev";
         reg = <0>;
         spi-max-frequency = <10000000>;
@@ -88,3 +93,7 @@
     bias-pull-up;
 };
 
+&i2s0 {
+    sound-dai = <&pcm5102a>;
+    status = "disabled";
+};

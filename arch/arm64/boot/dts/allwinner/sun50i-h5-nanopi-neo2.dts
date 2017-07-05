@@ -49,7 +49,7 @@
 #include <dt-bindings/thermal/thermal.h>
 
 / {
-	model = "FriendlyElec Nano Pi NEO 2";
+	model = "FriendlyElec NanoPi-NEO2";
 	compatible = "friendlyelec,nanopi-neo2", "allwinner,sun50i-h5";
 
 	reg_vcc3v3: vcc3v3 {
@@ -74,6 +74,12 @@
 		mmc2 = &mmc2;
 		ethernet0 = &emac;
 		lcd0 = &lcd0;
+		i2s0 = &i2s0;
+		pcm5102a = &pcm5102a;
+		spidev0 = &spidev0;
+        spiflash = &spiflash;
+        pitft = &pitft;
+        pitft_ts = &pitft_ts;
 	};
 
 	chosen {
@@ -149,6 +155,12 @@
 		states = <1100000 0x0
 			  1100000 0x1>;
 	};
+
+	pcm5102a: pcm5102a-codec {
+        #sound-dai-cells = <0>;
+        compatible = "ti,pcm5102a";
+        status = "disabled";
+    };
 };
 
 &cpu0 {
@@ -298,11 +310,14 @@
 		pins = "PA10";
 		function = "gpio_out";
 	};
-
 	gmac_power_pin_nanopi: gmac_power_pin@0 {
 		pins = "PD6";
 		function = "gpio_out";
 	};
+	spi0_cs_pins: spi0_cs_pins {
+        pins = "PC3", "PA6";
+        function = "gpio_out";
+    };
 };
 
 &r_pio {
@@ -357,6 +372,7 @@
 };
 
 &i2c1 {
+    /* no I2C1 for I2S0 */
     status = "okay";
 };
 
@@ -365,16 +381,87 @@
 };
 
 &spi0 {
+    /* needed to avoid dtc warning */
+    #address-cells = <1>;
+    #size-cells = <0>;
+
     status = "okay";
+    pinctrl-names = "default";
+    pinctrl-0 = <&spi0_pins &spi0_cs_pins>;
+    cs-gpios = <&pio 2 3 GPIO_ACTIVE_HIGH>, <&pio 0 6 GPIO_ACTIVE_HIGH>;
+
     spidev0: spi@0 {
         compatible = "nanopi,spidev";
         reg = <0>;
+        status = "disabled";
+
         spi-max-frequency = <10000000>;
+    };
+
+    spiflash: spiflash@0 {
+        #address-cells = <1>;
+        #size-cells = <1>;
+        compatible = "mxicy,mx25l1606e";
+        reg = <0>;
+        status = "disabled";
+
+        spi-max-frequency = <50000000>;
+        mode = <0>;
+
+        partition@0 {
+            reg = <0x0 0x200000>;
+            label = "spi-flash";
+        };
+    };
+
+    pitft: pitft@0{
+        compatible = "sitronix,st7789v";
+        reg = <0>;
+        status = "okay";
+
+        spi-max-frequency = <50000000>;
+        rotate = <90>;
+        fps = <33>;
+        buswidth = <8>;
+        dc-gpios = <&pio 0 1 GPIO_ACTIVE_HIGH>;     /* PA1 */
+        reset-gpios = <&pio 6 11 GPIO_ACTIVE_HIGH>; /* PG11 */
+        debug = <0x0>;
+    };
+
+    pitft_ts: pitft-ts@1 {
+        compatible = "ti,ads7846";
+        reg = <1>;
+        status = "okay";
+
+        spi-max-frequency = <2000000>;
+        interrupt-parent = <&pio>;
+        interrupts = <6 9 IRQ_TYPE_EDGE_FALLING>;   /* PG9 / EINT9 */
+        pendown-gpio = <&pio 6 9 GPIO_ACTIVE_LOW>;
+        ti,swap-xy;
+        ti,vref-delay-usecs = <1000>;
+        ti,x-min = /bits/ 16 <100>;
+        ti,x-max = /bits/ 16 <0xfff>;
+        ti,y-min = /bits/ 16 <100>;
+        ti,y-max = /bits/ 16 <0xfff>;
+        ti,vref-mv = <3300>;
+        ti,x-plate-ohms = /bits/ 16 <256>;
+        ti,penirq-recheck-delay-usecs = <10>;
+        ti,settle-delay-usec = /bits/ 16 <100>;
+        ti,keep-vref-on = <1>;
+        ti,pressure-max = /bits/ 16 <0xfff>;
+        ti,debounce-max = <10>;
+        ti,debounce-tol = <30>;
+        ti,debounce-rep = <1>;
     };
 };
 
 &pwm {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pwm0_pins>;
+	status = "disabled";
+};
+
+&i2s0 {
+	sound-dai = <&pcm5102a>;
 	status = "disabled";
 };

@@ -43,7 +43,7 @@
 #include "sun8i-h3-nanopi.dtsi"
 
 / {
-	model = "FriendlyARM NanoPi NEO Air";
+	model = "FriendlyElec NanoPi-NEO-Air";
 	compatible = "friendlyarm,nanopi-neo-air", "allwinner,sun8i-h3";
 
     wifi_pwrseq: wifi_pwrseq {
@@ -65,13 +65,16 @@
     };
 };
 
+&pio {
+    bt_pwr_pin: bt_pwr_pin@0 {
+        pins = "PG13";
+        function = "gpio_out";
+    };
+};
+
 &r_pio {
     wifi_en_npi: wifi_en_pin {
         pins = "PL7";
-        function = "gpio_out";
-    };
-    bt_pwr_pin: bt_pwr_pin@0 {
-        pins = "PG13";
         function = "gpio_out";
     };
 };
@@ -116,21 +119,22 @@
     status = "okay";
 };
 
-&i2c2 {
+&i2c1 {
+    /* no I2C1 for I2S0 */
     status = "okay";
 };
 
-&spi0 {
+&i2c2 {
     status = "okay";
-    spidev0: spi@0 {
-        compatible = "nanopi,spidev";
-        reg = <0>;
-        spi-max-frequency = <10000000>;
-    };
 };
 
 &uart3 {
     pinctrl-names = "default";
     pinctrl-0 = <&uart3_pins>, <&uart3_rts_cts_pins>;
     status = "okay";
+};
+
+&i2s0 {
+    sound-dai = <&pcm5102a>;
+    status = "disabled";
 };
