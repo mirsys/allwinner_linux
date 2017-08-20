@@ -83,6 +83,40 @@
 		#size-cells = <1>;
 		ranges;
 
+		emac: ethernet@1c30000 {
+			compatible = "allwinner,sun8i-h3-emac";
+			syscon = <&syscon>;
+			reg = <0x01c30000 0x104>;
+			interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
+			resets = <&ccu RST_BUS_EMAC>;
+			reset-names = "ahb";
+			clocks = <&ccu CLK_BUS_EMAC>;
+			clock-names = "ahb";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+
+			mdio: mdio {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				int_mii_phy: ethernet-phy@1 {
+					reg = <1>;
+					clocks = <&ccu CLK_BUS_EPHY>;
+					resets = <&ccu RST_BUS_EPHY>;
+				};
+			};
+		};
+
+		de: de-controller@01000000 {
+			compatible = "allwinner,sun8i-h3-display-engine";
+			reg = <0x01000000 0x400000>;
+			clocks = <&ccu CLK_BUS_DE>, <&ccu CLK_DE>;
+			clock-names = "bus", "clock";
+			resets = <&ccu RST_BUS_DE>;
+			ports = <&lcd0_p>;
+			status = "disabled";
+		};
+
 		dma: dma-controller@01c02000 {
 			compatible = "allwinner,sun8i-h3-dma";
 			reg = <0x01c02000 0x1000>;
@@ -90,6 +124,42 @@
 			clocks = <&ccu CLK_BUS_DMA>;
 			resets = <&ccu RST_BUS_DMA>;
 			#dma-cells = <1>;
+		};
+
+		lcd0: lcd-controller@01c0c000 {
+			compatible = "allwinner,sun8i-a83t-tcon";
+			reg = <0x01c0c000 0x400>;
+			clocks = <&ccu CLK_BUS_TCON0>, <&ccu CLK_TCON0>;
+			clock-names = "bus", "clock";
+			resets = <&ccu RST_BUS_TCON0>;
+			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			lcd0_p: port {
+				lcd0_hdmi: endpoint {
+					remote-endpoint = <&hdmi_lcd0>;
+				};
+			};
+		};
+
+		hdmi: hdmi@01ee0000 {
+			compatible = "allwinner,sun8i-h3-hdmi";
+			reg = <0x01ee0000 0x20000>;
+			clocks = <&ccu CLK_BUS_HDMI>, <&ccu CLK_HDMI>,
+				 <&ccu CLK_HDMI_DDC>;
+			clock-names = "bus", "clock", "ddc-clock";
+			resets = <&ccu RST_BUS_HDMI0>, <&ccu RST_BUS_HDMI1>;
+			reset-names = "hdmi0", "hdmi1";
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			port@0 {			/* video */
+				reg = <0>;
+				hdmi_lcd0: endpoint {
+					remote-endpoint = <&lcd0_hdmi>;
+				};
+			};
 		};
 
 		mmc0: mmc@01c0f000 {
@@ -265,19 +335,36 @@
 			clock-names = "hosc", "losc";
 			#clock-cells = <1>;
 			#reset-cells = <1>;
+
 		};
 
 		pio: pinctrl@01c20800 {
 			/* compatible is in per SoC .dtsi file */
 			reg = <0x01c20800 0x400>;
 			interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>,
-				     <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
+				     <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 23 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&ccu CLK_BUS_PIO>, <&osc24M>, <&osc32k>;
 			clock-names = "apb", "hosc", "losc";
 			gpio-controller;
 			#gpio-cells = <3>;
 			interrupt-controller;
 			#interrupt-cells = <3>;
+
+			emac_rgmii_pins: emac0@0 {
+				pins = "PD0", "PD1", "PD2", "PD3",
+				       "PD4", "PD5", "PD7",
+				       "PD8", "PD9", "PD10",
+				       "PD12", "PD13", "PD15",
+				       "PD16", "PD17";
+				function = "emac";
+				drive-strength = <40>;
+			};
+
+			i2s0_pins: i2s0 {
+				pins = "PA18", "PA19", "PA20", "PA21";
+				function = "i2s0";
+			};
 
 			i2c0_pins: i2c0 {
 				pins = "PA11", "PA12";
@@ -365,6 +452,27 @@
 				pins = "PA13", "PA14";
 				function = "uart3";
 			};
+			uart3_rts_cts_pins: uart3_rts_cts {
+				pins = "PA15", "PA16";
+				function = "uart3";
+			};
+
+			pwm0_pins: pwm0 {
+				pins = "PA5";
+				function = "pwm0";
+			};
+		};
+
+		ths: ths@01c25000 {
+			#thermal-sensor-cells = <0>;
+			compatible = "allwinner,sun8i-h3-ths";
+			reg = <0x01c25000 0x400>,
+			      <0x01c14234 0x4>;
+			interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+			resets = <&ccu RST_BUS_THS>;
+			reset-names = "ahb";
+			clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
+			clock-names = "ahb", "ths";
 		};
 
 		timer@01c20c00 {
@@ -407,6 +515,12 @@
 			#size-cells = <0>;
 		};
 
+		syscon: syscon@01c00000 {
+			compatible = "syscon",
+				     "allwinner,sun8i-h3-system-controller";
+			reg = <0x01c00000 0x1000>;
+		};
+
 		wdt0: watchdog@01c20ca0 {
 			compatible = "allwinner,sun6i-a31-wdt";
 			reg = <0x01c20ca0 0x20>;
@@ -447,6 +561,23 @@
 			allwinner,codec-analog-controls = <&codec_analog>;
 			status = "disabled";
 		};
+
+		i2s0: i2s@01c22000 {
+ 			#sound-dai-cells = <0>;
+ 			compatible = "allwinner,sun8i-h3-i2s";
+ 			reg = <0x01c22000 0x400>;
+ 			interrupts = <GIC_SPI 13 IRQ_TYPE_LEVEL_HIGH>; /* 45-32=13, P207 */
+ 			clocks = <&ccu CLK_BUS_I2S0>, <&ccu CLK_I2S0>;
+ 			clock-names = "apb", "mod";
+ 			resets = <&ccu RST_BUS_I2S0>;
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&i2s0_pins>;
+ 			dmas = <&dma 3>, <&dma 3>;
+ 			dma-names = "rx", "tx";
+ 			status = "disabled";
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 		};
 
 		uart0: serial@01c28000 {
 			compatible = "snps,dw-apb-uart";
@@ -597,6 +728,15 @@
 				pins = "PL11";
 				function = "s_cir_rx";
 			};
+
+		};
+	};
+
+	thermal-zones {
+		cpu_thermal: cpu_thermal {
+			polling-delay-passive = <330>;
+			polling-delay = <1000>;
+			thermal-sensors = <&ths 0>;
 		};
 	};
 };

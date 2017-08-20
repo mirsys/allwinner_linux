@@ -407,6 +407,13 @@ config MTK_THERMAL
 	  Enable this option if you want to have support for thermal management
 	  controller present in Mediatek SoCs
 
+config SUN8I_THS
+	tristate "Thermal sensor driver for Allwinner H3"
+	depends on MACH_SUN8I || (ARM64 && ARCH_SUNXI)
+	depends on OF
+	help
+	  Enable this to support thermal reporting on some newer Allwinner SoCs.
+
 menu "Broadcom thermal drivers"
 depends on ARCH_BCM || COMPILE_TEST
 source "drivers/thermal/broadcom/Kconfig"
