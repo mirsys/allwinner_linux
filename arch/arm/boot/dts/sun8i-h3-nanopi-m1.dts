@@ -47,6 +47,14 @@
 	compatible = "friendlyarm,nanopi-m1", "allwinner,sun8i-h3";
 };
 
+&ehci0 {
+	status = "okay";
+};
+
+&ehci0 {
+	status = "okay";
+};
+
 &ehci1 {
 	status = "okay";
 };
@@ -75,7 +83,8 @@
 };
 
 &i2c1 {
-    status = "okay";
+    /* no I2C1 for I2S0 */
+    status = "disabled";
 };
 
 &i2c2 {
@@ -84,4 +93,26 @@
 
 &spi1 {
     status = "okay";
+};
+
+
+&pcm5102a {
+	status = "okey";
+};
+
+&i2s0 {
+	sound-dai = <&pcm5102a>;
+	status = "okey";
+};
+
+&usb_otg {
+	dr_mode = "otg";
+	status = "okay";
+};
+
+&usbphy {
+	/* USB Type-A port's VBUS is always on */
+	usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
+	usb0_vbus-supply = <&reg_usb0_vbus>;
+	status = "okay";
 };

@@ -236,6 +236,7 @@ static void option_instat_callback(struct urb *urb);
 /* These Quectel products use Qualcomm's vendor ID */
 #define QUECTEL_PRODUCT_UC20			0x9003
 #define QUECTEL_PRODUCT_UC15			0x9090
+#define QUECTEL_PRODUCT_EC20			0x9215
 
 #define QUECTEL_VENDOR_ID			0x2c7c
 /* These Quectel products use Quectel's vendor ID */
@@ -1173,6 +1174,8 @@ static const struct usb_device_id option_ids[] = {
 	{ USB_DEVICE(QUALCOMM_VENDOR_ID, QUECTEL_PRODUCT_UC15)},
 	{ USB_DEVICE(QUALCOMM_VENDOR_ID, QUECTEL_PRODUCT_UC20),
 	  .driver_info = (kernel_ulong_t)&net_intf4_blacklist },
+	{ USB_DEVICE(QUALCOMM_VENDOR_ID, QUECTEL_PRODUCT_EC20),
+	  .driver_info = (kernel_ulong_t)&net_intf4_blacklist },
 	/* Quectel products using Quectel vendor ID */
 	{ USB_DEVICE(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC21),
 	  .driver_info = (kernel_ulong_t)&net_intf4_blacklist },
@@ -2057,6 +2060,7 @@ static struct usb_serial_driver option_1port_device = {
 #ifdef CONFIG_PM
 	.suspend           = usb_wwan_suspend,
 	.resume            = usb_wwan_resume,
+	.reset_resume	   = usb_wwan_resume,
 #endif
 };
 
@@ -2095,6 +2099,17 @@ static int option_probe(struct usb_serial *serial,
 	    dev_desc->idProduct == cpu_to_le16(SAMSUNG_PRODUCT_GT_B3730) &&
 	    iface_desc->bInterfaceClass != USB_CLASS_CDC_DATA)
 		return -ENODEV;
+
+	//Quectel UC20's interface 4 can be used as USB Network device
+	if(serial->dev->descriptor.idVendor == cpu_to_le16(0x05C6) && serial->dev->descriptor.idProduct == cpu_to_le16(0x9003) && serial->interface->cur_altsetting->desc.bInterfaceNumber >= 4)
+		return -ENODEV;
+	//Quectel EC20's interface 4 can be used as USB Network device
+	if(serial->dev->descriptor.idVendor == cpu_to_le16(0x05C6) && serial->dev->descriptor.idProduct == cpu_to_le16(0x9215) && serial->interface->cur_altsetting->desc.bInterfaceNumber >= 4)
+		return -ENODEV;
+	//Quectel EC21&EC25&EC20 R2.0's interface 4 can be used as USB Network device
+	if(serial->dev->descriptor.idVendor == cpu_to_le16(0x2C7C) && serial->interface->cur_altsetting->desc.bInterfaceNumber >= 4)
+		return -ENODEV;
+
 
 	/* Store the blacklist info so we can use it during attach. */
 	usb_set_serial_data(serial, (void *)blacklist);

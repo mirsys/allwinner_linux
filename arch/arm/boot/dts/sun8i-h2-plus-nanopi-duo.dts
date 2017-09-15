@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2016 James Pettigrew <james@innovum.com.au>
+ * Copyright (C) 2016 Milo Kim <woogyom.kim@gmail.com>
  *
  * This file is dual-licensed: you can use it either under the terms
  * of the GPL or the X11 license, at your option. Note that this dual
@@ -40,44 +41,216 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "sun8i-h3-nanopi.dtsi"
+/dts-v1/;
+#include "sun8i-h3.dtsi"
+#include "sunxi-common-regulators.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/pinctrl/sun4i-a10.h>
+#include <dt-bindings/thermal/thermal.h>
 
 / {
 	model = "FriendlyElec NanoPi-Duo";
 	compatible = "friendlyarm,nanopi-duo", "allwinner,sun8i-h3";
 
-    vdd_wifi: vdd_wifi {
-        compatible = "regulator-fixed";
-        regulator-name = "wifi";
-        regulator-min-microvolt = <1800000>;
-        regulator-max-microvolt = <1800000>;
-        gpio = <&r_pio 0 7 GPIO_ACTIVE_HIGH>;                // GPIOL7/WIFI_POWER_EN
-        startup-delay-us = <70000>;
-        enable-active-high;
-    };
+	aliases {
+		serial0 = &uart0;
+		serial1 = &uart1;
+		serial2 = &uart2;
+		serial3 = &uart3;
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		i2c2 = &i2c2;
+		spi0 = &spi0;
+		spi1 = &spi1;
+		pwm0 = &pwm;
+		mmc0 = &mmc0;
+		mmc2 = &mmc2;
+		ethernet0 = &emac;
+		lcd0 = &lcd0;
+		i2s0 = &i2s0;
+	};
 
-    wifi_pwrseq: wifi_pwrseq {
-        compatible = "mmc-pwrseq-simple";
-        pinctrl-names = "default";
-        pinctrl-0 = <&wifi_en_npi>;
-        reset-gpios = <&pio 6 13 GPIO_ACTIVE_LOW>;          // GPIOG13/WL_RESTN
-        post-power-on-delay-ms = <50>;
-    };
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+    	vdd_wifi: vdd_wifi {
+        	compatible = "regulator-fixed";
+        	regulator-name = "wifi";
+        	regulator-min-microvolt = <1800000>;
+        	regulator-max-microvolt = <1800000>;
+        	gpio = <&r_pio 0 7 GPIO_ACTIVE_HIGH>;                // GPIOL7/WIFI_POWER_EN
+        	startup-delay-us = <70000>;
+        	enable-active-high;
+    	};
+
+    	wifi_pwrseq: wifi_pwrseq {
+        	compatible = "mmc-pwrseq-simple";
+        	pinctrl-names = "default";
+        	pinctrl-0 = <&wifi_en_npi>;
+        	reset-gpios = <&pio 6 13 GPIO_ACTIVE_LOW>;          // GPIOG13/WL_RESTN
+        	post-power-on-delay-ms = <50>;
+    	};
+     	reg_usb0_vbus: usb0-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb0-vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		enable-active-high;
+		gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
+		status = "okay";
+     	};
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&leds_npi>, <&leds_r_npi>;
+
+		status {
+			label = "nanopi:blue:status";
+			gpios = <&pio 0 10 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "heartbeat";
+		};
+
+		pwr {
+			label = "nanopi:green:pwr";
+			gpios = <&r_pio 0 10 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
+	};
+
+	r_gpio_keys {
+		compatible = "gpio-keys";
+		input-name = "k1";
+		pinctrl-names = "default";
+		pinctrl-0 = <&sw_r_npi>;
+
+		k1@0 {
+			label = "k1";
+			linux,code = <KEY_POWER>;
+			gpios = <&r_pio 0 3 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	vdd_cpux: gpio-regulator {
+		compatible = "regulator-gpio";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&vdd_cpux_r_npi>;
+
+		regulator-name = "vdd-cpux";
+		regulator-type = "voltage";
+		regulator-boot-on;
+		regulator-always-on;
+		regulator-min-microvolt = <1100000>;
+		regulator-max-microvolt = <1300000>;
+		regulator-ramp-delay = <50>; /* 4ms */
+
+		gpios = <&r_pio 0 6 GPIO_ACTIVE_HIGH>;
+		gpios-states = <0x1>;
+		states = <1100000 0x0
+			  1300000 0x1>;
+	};
+
 };
 
-&emac {
-    phy-handle = <&int_mii_phy>;
-    phy-mode = "mii";
-    allwinner,leds-active-low;
-    status = "okay";
+&cpu0 {
+	operating-points = <
+		1008000	1300000
+		816000	1100000
+		624000	1100000
+		480000	1100000
+		312000	1100000
+		240000	1100000
+		120000	1100000
+		>;
+	#cooling-cells = <2>;
+	cooling-min-level = <0>;
+	cooling-max-level = <6>;
+	cpu0-supply = <&vdd_cpux>;
 };
 
-&i2c0 {
-    status = "okay";
-    rtc@68 {
-                compatible = "dallas,ds1307";
-                reg = <0x68>;
-        };
+&cpu_thermal {
+	trips {
+		cpu_warm: cpu_warm {
+			temperature = <65000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_hot: cpu_hot {
+			temperature = <75000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_very_hot: cpu_very_hot {
+			temperature = <90000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+		cpu_crit: cpu_crit {
+			temperature = <105000>;
+			hysteresis = <2000>;
+			type = "critical";
+		};
+	};
+
+	cooling-maps {
+		cpu_warm_limit_cpu {
+			trip = <&cpu_warm>;
+			cooling-device = <&cpu0 THERMAL_NO_LIMIT 1>;
+		};
+		cpu_hot_limit_cpu {
+			trip = <&cpu_hot>;
+			cooling-device = <&cpu0 2 3>;
+		};
+		cpu_very_hot_limit_cpu {
+			trip = <&cpu_very_hot>;
+			cooling-device = <&cpu0 5 THERMAL_NO_LIMIT>;
+		};
+	};
+};
+
+&ehci0 {
+	status = "okay";
+};
+
+&ohci0 {
+	status = "okay";
+};
+
+&ehci1 {
+	status = "disabled";
+};
+
+&ohci1 {
+	status = "disabled";
+};
+
+&ehci2 {
+	status = "okay";
+};
+
+&ohci2 {
+	status = "okay";
+};
+
+&ehci3 {
+	status = "okay";
+};
+
+&ohci3 {
+	status = "okay";
+};
+
+&mmc0 {
+	bus-width = <4>;
+	cd-gpios = <&pio 5 6 GPIO_ACTIVE_HIGH>;
+	cd-inverted;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin>;
+	boot_device = <0>;
+	status = "okay";
+	vmmc-supply = <&reg_vcc3v3>;
 };
 
 &mmc1 {
@@ -98,8 +271,13 @@
             interrupt-parent = <&pio>;
             interrupts = <6 10 IRQ_TYPE_EDGE_RISING>;
             interrupt-names = "host-wake";
-            local-mac-address = [dc 44 6d c0 ff ee];
+            local-mac-address = [dc 44 6d c0 ff ef];
     };
+};
+
+
+&mmc2 {
+	boot_device = <0>;
 };
 
 &pio {
@@ -112,13 +290,202 @@
         pins = "PG13";
         function = "gpio_out";
     };
+    leds_npi: led_pins@0 {
+    	pins = "PA10";
+    	function = "gpio_out";
+    };
+    spi0_cs_pins: spi0_cs_pins {
+        pins = "PC3", "PA6";
+        function = "gpio_out";
+    };
+    spi1_cs_pins: spi1_cs_pins {
+        pins = "PA13";
+        function = "gpio_out";
+    };
+};
+
+&r_pio {
+	leds_r_npi: led_pins@0 {
+		pins = "PL10";
+		function = "gpio_out";
+	};
+
+	sw_r_npi: key_pins@0 {
+		pins = "PL3";
+		function = "gpio_in";
+	};
+	vdd_cpux_r_npi: regulator_pins@0 {
+		allwinner,pins = "PL6";
+		allwinner,function = "gpio_out";
+		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+	};
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins_a>;
+	status = "okay";
+};
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart1_pins>;
+	status = "okay";
+};
+
+&spi0 {
+    /* needed to avoid dtc warning */
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    status = "okay";
+    pinctrl-names = "default";
+    pinctrl-0 = <&spi0_pins &spi0_cs_pins>;
+    cs-gpios = <&pio 2 3 GPIO_ACTIVE_HIGH>, <&pio 0 6 GPIO_ACTIVE_HIGH>;
+
+     m25p80@0 {
+	compatible = "w25q128";
+	spi-max-frequency = <40000000>;
+	reg = <0>;
+	spi-tx-bus-width = <1>;
+	spi-rx-bus-width = <1>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+    	/*
+    	* MTD partition table.
+    	*/
+    	partition@0 {
+    		label = "spi.spl-uboot";
+    		reg = <0x00000000 0x00080000>;
+    	};
+    	partition@1 {
+    		label = "spi.dtb";
+    		reg = <0x00080000 0x00080000>;
+    	};
+    	partition@2 {
+    		label = "spi.kernel";
+    		reg = <0x00100000 0x00500000>;
+    	};
+    	partition@3 {
+    		label = "spi.os";
+    		reg = <0x00600000 0x00a00000>;
+    	};
+    };
+
 };
 
 &spi1 {
+    /* needed to avoid dtc warning */
+    #address-cells = <1>;
+    #size-cells = <0>;
+
     status = "okay";
-    spidev1: spi@1 {
-        compatible = "nanopi,spidev";
+    pinctrl-names = "default";
+    pinctrl-0 = <&spi1_pins>;
+    cs-gpios = <&pio 0 13 GPIO_ACTIVE_HIGH>;
+
+
+    pitft: pitft@0{
+        compatible = "sitronix,st7789v";
         reg = <0>;
-        spi-max-frequency = <10000000>;
+        status = "disabled";
+
+        spi-max-frequency = <50000000>;
+        rotate = <90>;
+        fps = <33>;
+        buswidth = <8>;
+        dc-gpios = <&pio 0 1 GPIO_ACTIVE_HIGH>;     /* PA1 */
+        reset-gpios = <&pio 6 11 GPIO_ACTIVE_HIGH>; /* PG11 */
+        debug = <0x0>;
     };
+
+    pitft_ts: pitft-ts@1 {
+        compatible = "ti,ads7846";
+        reg = <1>;
+        status = "disabled";
+
+        spi-max-frequency = <2000000>;
+        interrupt-parent = <&pio>;
+        interrupts = <6 9 IRQ_TYPE_EDGE_FALLING>;   /* PG9 / EINT9 */
+        pendown-gpio = <&pio 6 9 GPIO_ACTIVE_LOW>;
+        ti,swap-xy;
+        ti,vref-delay-usecs = <1000>;
+        ti,x-min = /bits/ 16 <100>;
+        ti,x-max = /bits/ 16 <0xfff>;
+        ti,y-min = /bits/ 16 <100>;
+        ti,y-max = /bits/ 16 <0xfff>;
+        ti,vref-mv = <3300>;
+        ti,x-plate-ohms = /bits/ 16 <256>;
+        ti,penirq-recheck-delay-usecs = <10>;
+        ti,settle-delay-usec = /bits/ 16 <100>;
+        ti,keep-vref-on = <1>;
+        ti,pressure-max = /bits/ 16 <0xfff>;
+        ti,debounce-max = <10>;
+        ti,debounce-tol = <30>;
+        ti,debounce-rep = <1>;
+    };
+};
+
+
+&de {
+    status = "okay";
+};
+
+&hdmi {
+    status = "okay";
+};
+
+&lcd0 {
+    status = "okay";
+};
+
+&emac {
+	local-mac-address = [ 00 00 00 00 00 00 ];
+	phy-handle = <&int_mii_phy>;
+	phy-mode = "mii";
+	allwinner,leds-active-low;
+	status = "okay";	
+};
+
+&codec {
+	allwinner,audio-routing =
+		"Line Out", "LINEOUT",
+		"MIC1", "Mic",
+		"Mic",  "MBIAS";
+	status = "okay";
+};
+
+&pwm {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pwm0_pins>;
+	status = "okey";
+};
+
+
+&i2c0 {
+    status = "okay";
+    rtc@68 {
+                compatible = "dallas,ds1307";
+                reg = <0x68>;
+        };
+};
+
+&ir {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ir_pins_a>;
+	status = "okay";
+};
+
+&usb_otg {
+	dr_mode = "otg";
+	status = "okay";
+};
+
+&usbphy {
+	/* USB Type-A ports' VBUS is always on */
+	usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
+	usb0_vbus-supply = <&reg_usb0_vbus>;
+	status = "okay";
 };

@@ -68,10 +68,10 @@
 		lcd0 = &lcd0;
 		i2s0 = &i2s0;
 		pcm5102a = &pcm5102a;
-        spidev0 = &spidev0;
-        spiflash = &spiflash;
-        pitft = &pitft;
-        pitft_ts = &pitft_ts;
+        	spidev0 = &spidev0;
+        	spiflash = &spiflash;
+        	pitft = &pitft;
+        	pitft_ts = &pitft_ts;
 	};
 
 	chosen {
@@ -109,6 +109,16 @@
 		};
 	};
 
+	reg_usb0_vbus: usb0-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb0-vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		enable-active-high;
+		gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
+		status = "okay";
+	};
+
 	vdd_cpux: gpio-regulator {
 		compatible = "regulator-gpio";
 
@@ -129,11 +139,11 @@
 			  1300000 0x1>;
 	};
 
-    pcm5102a: pcm5102a-codec {
-        #sound-dai-cells = <0>;
-        compatible = "ti,pcm5102a";
-        status = "disabled";
-    };
+    	pcm5102a: pcm5102a-codec {
+        	#sound-dai-cells = <0>;
+        	compatible = "ti,pcm5102a";
+        	status = "disabled";
+    	};
 };
 
 &cpu0 {
@@ -317,7 +327,7 @@
     pitft: pitft@0{
         compatible = "sitronix,st7789v";
         reg = <0>;
-        status = "okay";
+        status = "disabled";
 
         spi-max-frequency = <50000000>;
         rotate = <90>;
@@ -331,7 +341,7 @@
     pitft_ts: pitft-ts@1 {
         compatible = "ti,ads7846";
         reg = <1>;
-        status = "okay";
+        status = "disabled";
 
         spi-max-frequency = <2000000>;
         interrupt-parent = <&pio>;
@@ -388,3 +398,5 @@
 	pinctrl-0 = <&pwm0_pins>;
 	status = "disabled";
 };
+
+

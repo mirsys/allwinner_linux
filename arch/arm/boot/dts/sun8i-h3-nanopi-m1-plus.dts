@@ -166,3 +166,24 @@
     pinctrl-0 = <&uart3_pins>, <&uart3_rts_cts_pins>;
     status = "okay";
 };
+
+&pcm5102a {
+	status = "okey";
+};
+
+&i2s0 {
+	sound-dai = <&pcm5102a>;
+	status = "okey";
+};
+
+&usb_otg {
+	dr_mode = "otg";
+	status = "okay";
+};
+
+&usbphy {
+	/* USB Type-A port's VBUS is always on */
+	usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
+	usb0_vbus-supply = <&reg_usb0_vbus>;
+	status = "okay";
+};

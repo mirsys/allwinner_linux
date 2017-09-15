@@ -155,7 +155,8 @@ struct priv {
 	struct reset_control *rstc;
 
 	int type;
-	int nchan;
+	unsigned int nchan;
+	unsigned int bclk_ratio;
 
 	struct snd_dmaengine_dai_dma_data playback_dma_data;
 };
@@ -165,6 +166,8 @@ static const struct of_device_id sun8i_i2s_of_match[] = {
 				.data = (void *) SOC_A83T },
 	{ .compatible = "allwinner,sun8i-h3-i2s",
 				.data = (void *) SOC_H3 },
+	{ .compatible = "allwinner,sun8i-h5-i2s",
+				.data = (void *) SOC_H5 },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, sun8i_i2s_of_match);
@@ -179,6 +182,7 @@ static void sun8i_i2s_init(struct priv *priv)
 			   0);
 
 	priv->nchan = 2;
+	priv->bclk_ratio = PCM_LRCK_PERIOD * priv->nchan;
 
 	/* A83T */
 	if (priv->type == SOC_A83T) {
@@ -237,22 +241,24 @@ static int sun8i_i2s_set_clock(struct priv *priv, unsigned long rate)
 	unsigned long freq;
 	int ret, i, div;
 	static const u8 div_tb[] = {
-		1, 2, 4, 6, 8, 12, 16, 24,
+		1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 176, 192,
 	};
 
-	DBGOUT("%s: rate = %lu.", __func__, rate);
+	DBGOUT("%s: rate = %lu, bclk_ratio = %u.", __func__, rate, priv->bclk_ratio);
 
 	/* compute the sys clock rate and divide values */
 	if (rate % 1000 == 0)
 		freq = 24576000;
 	else
 		freq = 22579200;
-	div = freq / 2 / PCM_LRCK_PERIOD / rate;
+	div = freq / (((unsigned long)priv->bclk_ratio) * rate);
 	if (priv->type == SOC_A83T)
 		div /= 2;			/* bclk_div==0 => mclk/2 */
 	for (i = 0; i < ARRAY_SIZE(div_tb) - 1; i++)
 		if (div_tb[i] >= div)
 			break;
+
+	DBGOUT("%s: freq = %lu, div = %d", __func__, freq, div_tb[i]);
 
 	ret = clk_set_rate(priv->mod_clk, freq);
 	if (ret) {
@@ -271,13 +277,18 @@ static int sun8i_i2s_set_clock(struct priv *priv, unsigned long rate)
 
 	/* format */
 	if (priv->type == SOC_A83T) {
+		if (priv->bclk_ratio != 32 * priv->nchan) {
+			// TODO
+			return -EINVAL;
+		}
 		regmap_update_bits(priv->regmap, I2S_FAT0,
 				   I2S_FAT0_A83T_WSS_32BCLK | I2S_FAT0_A83T_SR_MSK,
 				   I2S_FAT0_A83T_WSS_32BCLK | I2S_FAT0_A83T_SR_16BIT);
 	} else {
 		regmap_update_bits(priv->regmap, I2S_FAT0,
 				   I2S_FAT0_H3_LRCKR_PERIOD_MSK | I2S_FAT0_H3_LRCK_PERIOD_MSK,
-				   I2S_FAT0_H3_LRCK_PERIOD(PCM_LRCK_PERIOD - 1) | I2S_FAT0_H3_LRCKR_PERIOD(PCM_LRCKR_PERIOD - 1));
+				   I2S_FAT0_H3_LRCK_PERIOD((priv->bclk_ratio / priv->nchan) - 1) |
+				   I2S_FAT0_H3_LRCKR_PERIOD(PCM_LRCKR_PERIOD - 1));
 
 		regmap_update_bits(priv->regmap, I2S_FAT0,
 				   I2S_FAT0_H3_SW_MSK | I2S_FAT0_H3_SR_MSK,
@@ -665,12 +676,26 @@ static int sun8i_i2s_trigger(struct snd_pcm_substream *substream,
 	return 0;
 }
 
+static int sun8i_i2s_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
+{
+	struct snd_soc_card *card = snd_soc_dai_get_drvdata(dai);
+	struct priv *priv = snd_soc_card_get_drvdata(card);
+
+	DBGOUT("%s: ratio = %u\n",
+	       __func__, ratio);
+
+	priv->bclk_ratio = ratio;
+
+	return 0;
+}
+
 static const struct snd_soc_dai_ops sun8i_i2s_dai_ops = {
 	.hw_params	= sun8i_i2s_hw_params,
 	.set_fmt	= sun8i_i2s_set_fmt,
 	.shutdown	= sun8i_i2s_shutdown,
 	.startup	= sun8i_i2s_startup,
 	.trigger	= sun8i_i2s_trigger,
+	.set_bclk_ratio	= sun8i_i2s_set_bclk_ratio,
 };
 
 static int sun8i_i2s_controls_get(struct snd_kcontrol *kcontrol,
@@ -741,7 +766,7 @@ static struct snd_soc_dai_driver sun8i_i2s_dai = {
 		.channels_max = 8,
 		.rates = SNDRV_PCM_RATE_8000_192000 | SNDRV_PCM_RATE_KNOT,
 		.rate_min = 8000,
-		.rate_max = 192000,
+		.rate_max = 384000,
 		.formats = I2S_FORMATS,
 	},
 	.ops = &sun8i_i2s_dai_ops,
@@ -761,7 +786,7 @@ static const struct snd_pcm_hardware sun8i_i2s_pcm_hardware = {
 	.formats = I2S_FORMATS,
 	.rates = SNDRV_PCM_RATE_8000_192000 | SNDRV_PCM_RATE_KNOT,
 	.rate_min = 8000,
-	.rate_max = 192000,
+	.rate_max = 384000,
 	.channels_min = 1,
 	.channels_max = 8,
 	.buffer_bytes_max = 1024 * 1024,
@@ -1053,7 +1078,7 @@ static int sun8i_i2s_dev_probe(struct platform_device *pdev)
 	}
 
 	/* get SoC type */
-	priv->type = (long int) of_match_device(sun8i_i2s_of_match, &pdev->dev)->data;
+	priv->type = (int) of_match_device(sun8i_i2s_of_match, &pdev->dev)->data;
 	DBGOUT("%s: priv->type = %d\n", __func__, priv->type);
 
 	/* get and enable the clocks */

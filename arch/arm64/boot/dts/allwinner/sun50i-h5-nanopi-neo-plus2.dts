@@ -71,15 +71,10 @@
 		spi1 = &spi1;
 		pwm0 = &pwm;
 		mmc0 = &mmc0;
+		mmc1 = &mmc1;
 		mmc2 = &mmc2;
 		ethernet0 = &emac;
 		lcd0 = &lcd0;
-		i2s0 = &i2s0;
-		pcm5102a = &pcm5102a;
-		spidev0 = &spidev0;
-        spiflash = &spiflash;
-        pitft = &pitft;
-        pitft_ts = &pitft_ts;
 	};
 
 	chosen {
@@ -114,6 +109,22 @@
 		};
 	};
 
+	pcm5102a: pcm5102a-codec {
+		#sound-dai-cells = <0>;
+		compatible = "ti,pcm5102a";
+		status = "okay";
+	};
+
+	reg_usb0_vbus: usb0-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb0-vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		enable-active-high;
+		gpio = <&r_pio 0 2 GPIO_ACTIVE_HIGH>; /* PL2 */
+		status = "okay";
+	};
+
 	reg_gmac_3v3: gmac-3v3 {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
@@ -146,13 +157,13 @@
 			  1300000 0x1>;
 	};
 
-    wifi_pwrseq: wifi_pwrseq {
-        compatible = "mmc-pwrseq-simple";
-        pinctrl-names = "default";
-        pinctrl-0 = <&wifi_en_npi>;
-        reset-gpios = <&r_pio 0 7 GPIO_ACTIVE_LOW>; /* PL7 */
-        post-power-on-delay-ms = <200>;
-    };
+    	wifi_pwrseq: wifi_pwrseq {
+        	compatible = "mmc-pwrseq-simple";
+        	pinctrl-names = "default";
+        	pinctrl-0 = <&wifi_en_npi>;
+        	reset-gpios = <&r_pio 0 7 GPIO_ACTIVE_LOW>; /* PL7 */
+        	post-power-on-delay-ms = <200>;
+    	};
 
 	rfkill_bt {
 		compatible = "rfkill-gpio";
@@ -164,12 +175,6 @@
 		rfkill-name = "sunxi-bt";
 		rfkill-type = "bluetooth";
 	};
-
-	pcm5102a: pcm5102a-codec {
-        #sound-dai-cells = <0>;
-        compatible = "ti,pcm5102a";
-        status = "disabled";
-    };
 };
 
 &cpu0 {
@@ -312,6 +317,9 @@
     brcmf: bcrmf@1 {
         reg = <1>;
         compatible = "brcm,bcm4329-fmac";
+		interrupt-parent = <&pio>;
+		interrupts = <6 10 IRQ_TYPE_LEVEL_LOW>; /* PG10 / EINT10 */
+		interrupt-names = "host-wake";
     };
 };
 
@@ -362,6 +370,10 @@
 		pins = "PG13";
 		function = "gpio_out";
 	};
+	i2s0_pins: i2s0 {
+		pins = "PA18", "PA19", "PA20", "PA21"; /* no MCLK needed */
+		function = "i2s0";
+	};
 	spi0_cs_pins: spi0_cs_pins {
         pins = "PC3", "PA6";
         function = "gpio_out";
@@ -379,10 +391,10 @@
 		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
 		allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
 	};
-    wifi_en_npi: wifi_en_pin {
-        pins = "PL7";
-        function = "gpio_out";
-    };
+    	wifi_en_npi: wifi_en_pin {
+        	pins = "PL7";
+        	function = "gpio_out";
+    	};
 };
 
 &uart0 {
@@ -410,17 +422,25 @@
 };
 
 &usb_otg {
-	dr_mode = "host";
+	dr_mode = "otg";
 	status = "okay";
 };
 
 &usbphy {
+	/* USB Type-A ports' VBUS is always on */
 	usb0_id_det-gpios = <&pio 6 12 GPIO_ACTIVE_HIGH>; /* PG12 */
+	usb0_vbus-supply = <&reg_usb0_vbus>;
+	status = "okay";
+};
+
+&i2s0 {
+	compatible = "allwinner,sun8i-h5-i2s";
+	sound-dai = <&pcm5102a>;
 	status = "okay";
 };
 
 &i2c0 {
-    status = "okay";
+    status = "disabled";
     rtc@68 {
             compatible = "dallas,ds1307";
             reg = <0x68>;
@@ -429,7 +449,7 @@
 
 &i2c1 {
     /* no I2C1 for I2S0 */
-    status = "okay";
+    status = "disabled";
 };
 
 &i2c2 {
@@ -473,7 +493,7 @@
     pitft: pitft@0{
         compatible = "sitronix,st7789v";
         reg = <0>;
-        status = "okay";
+        status = "disabled";
 
         spi-max-frequency = <50000000>;
         rotate = <90>;
@@ -487,7 +507,7 @@
     pitft_ts: pitft-ts@1 {
         compatible = "ti,ads7846";
         reg = <1>;
-        status = "okay";
+        status = "disabled";
 
         spi-max-frequency = <2000000>;
         interrupt-parent = <&pio>;
@@ -514,10 +534,5 @@
 &pwm {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pwm0_pins>;
-	status = "disabled";
-};
-
-&i2s0 {
-	sound-dai = <&pcm5102a>;
 	status = "disabled";
 };
